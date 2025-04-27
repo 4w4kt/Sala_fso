@@ -25,152 +25,42 @@
 		return -1;
 	}
     
-   
-#define BUFFER_SIZE 512
 
-int f_Status =0;
-
-int cerrar(int fd){
-	if(close(fd) == -1){
-	perror("Error");
-	return -1;
-	}
-	puts("Se cerró el fichero correctamente");
-	return 0;
-}
-
-
-
-int copiar(char* emisor, char* receptor){
-	int fd_reader = open(emisor, O_RDONLY);
-	if (fd_reader == -1){
-		perror("Error");
-		return -1;
-	}
-	int mode = O_WRONLY | O_TRUNC;
-	if (!F_Status){
-		if (access(receptor, F_OK) == -1){
-			perror("Error");
-			return -1;
-		}
-		puts("¿Desea sobreescribir el fichero?\n");
-		char* respuesta;
-		do{
-		puts("responda: \"Si\" | \"No\"");
-		scanf("%s", &repuesta);
-		} while(!strcmp(respuesta, "Si") ||while(!strcmp(respuesta, "No")))
-		if(!strcmp(respuesta, "No")){
-			mode = O_WRONLY;
-		}
-	}
-	
-	int fd_writer = open(receptor, mode);
-	if (fd_writer == -1){
-		perror("Error");
-		return -1;
-	}
-	
-	char* buffer = malloc(BUFFER_SIZE); 
-	ssize_t bytes_leidos = read(fd_reader, buffer, BUFFER_SIZE);
-	int counter;
-	while (bytes_leidos > 0){
-		while(counter < bytes_leidos){
-			ssize_t written = write(fd_writer, buffer, bytes_leidos);
-			if (written == -1){
-				perror("Error en la lectura");
-				return -1;
-			}
-			counter += written;
-		}
-	}
-	if(bytes_leidos == -1){
-		perror("Error en la lectura");
-		return -1;
-	}
-	printf("se ha copiado %s en %s", emisor, receptor);
-	
-	cerrar(fd_writer);
-	cerrar(fd_reader);
-	
-}
-
-guardar_estado_sala(char* direccion){
+void guardar_estado_sala(char* ruta_fichero){
 	int mode = O_CREAT | O_WRONLY | O_TRUNC;
-	int fd_writer = open(direccion, mode);
-	CHECK_ERROR(fd_writer);
+	int fd = open(ruta_fichero, mode);
+	CHECK_ERROR(fd);
 	
 	int capacidad_sala = capacidad_sala();
-	int asientos_ocupados = asientos_ocupados();
-	ssize_t bytes_escritos = write(fd, &capacidad_sala, sizeof(numero));
-	if(bytes_escritos == -1){
-		perror("error escribiendo en el archivo");
-		close(fd);
-		return -1;
-	}
-	
-	ssize_t bytes_escritos = write(fd, &asientos_ocupados, sizeof(numero));
-	if(bytes_escritos == -1){
-		perror("error escribiendo en el archivo");
-		close(fd);
-		return -1;
-	}
-	int counter = 0;
-	//completar con matrices mudas
-	if (asientos_ocupados * 2 +1< capacidad_sala){
-		
-		for(int i = 0; counter < asientos_ocupados; i++){
-			estado = estado_asiento(i)
-			if(estado > 0) {
-				ssize_t bytes_escritos = write(fd, &estado, sizeof(numero));
-				if(bytes_escritos == -1){
-					perror("error escribiendo en el archivo");
-					close(fd);
-					return -1;
-				}
-				counter++;
-			}
-		}
-	}
-	//si está ocupado la mayoría:
-	for(int i = 0; counter < asientos_ocupados; i++){
-		estado = estado_asiento(i)
-		ssize_t bytes_escritos = write(fd, &estado, sizeof(numero));
-		if(bytes_escritos == -1){
-			perror("error escribiendo en el archivo");
-			close(fd);
-			return -1;
-		}
-	}
+	ssize_t bytes_escritos = write(fd, &capacidad_sala, sizeof(int));
+	CHECK_ESCRITO(bytes_escritos);
+	ssize_t bytes_escritos = write(fd, &asientos_ocupados(), sizeof(int));
+	CHECK_ESCRITO(bytes_escritos);
+	ssize_t bytes_escritos = write(fd, &get_sala(), sizeof(int)*capacidad_sala);
+	CHECK_ESCRITO(bytes_escritos);
 	close(fd)
-
+	return;
 }
-int recupera_estado_sala (char* ruta_fichero){
-	if(capacidad_sala() < 1){
-		perror("La sala no existe");
-		return -1;
-	}
-	
+
+
+void recupera_estado_sala(char* ruta_fichero){	
 	int fd = open(ruta_fichero, O_RDONLY);
 	CHECK_ERROR(fd);
 	
 	int datos_sala [2];
 	for(int i = 0; i<2; i++){
 		ssize_t bytes_leidos = read(fd, &datos_sala, sizeof(int));
-		
-	} 
-	ssize_t bytes_leidos = read(fd_reader, buffer, BUFFER_SIZE);
-	
-	if(bytes_leidos == -1){
-		perror("Error en la lectura");
-		return -1;
+		CKECK_LEIDO(bytes_leidos);
+		if(capacidad_sala() != datos_sala[0] ){
+			perror("La sala creada tiene una capacidad distinta a la que quiere restaurar");
+			return -1;
+		}
 	}
-	int counter = 0;
-	while (bytes_leidos > 0){
-		
-		ssize_t bytes_leidos = read(fd_reader, buffer, BUFFER_SIZE);
-		
-	}
-
+	int* estado_asiento = malloc(sizeof(int) * capacidad_sala);
+	ssize_t bytes_leidos = read(fd, &estado_asiento, sizeof(int));
+	CHECK_LEIDO(bytes_leidos);
+	close(fd);
+	reemplaaza_sala(estado_asiento, datos_sala[0], datos_sala[1]);
 }
 
 
