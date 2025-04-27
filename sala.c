@@ -108,6 +108,10 @@ int reemplaaza_sala(int* asientos, int capacidad, int asientos_ocupados) {
     return capacidad;
 }
 
+int* get_sala(){
+    return sala;
+}
+
 
 /**
  * Libera la memoria asociada a la sala.
