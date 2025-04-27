@@ -8,8 +8,22 @@
 #define CHECK_LEIDO(x)         \
     if ((x) == -1) {            \
         perror("Error en la lectura"); \
+		close(x)
         return -1;              \
     }
+
+#define CHECK_ERROR(x)         \
+	   if ((x) == -1) {            \
+	   perror("Error en la lectura"); \
+	   return -1;              \
+	}
+
+#define CHECK_ESCRITO(x)         \
+	   if ((x) == -1) {            \
+	   perror("Error en escribiendo en el archivo");		\
+		close(x);
+		return -1;
+	}
     
    
 #define BUFFER_SIZE 512
@@ -83,10 +97,7 @@ int copiar(char* emisor, char* receptor){
 guardar_estado_sala(char* direccion){
 	int mode = O_CREAT | O_WRONLY | O_TRUNC;
 	int fd_writer = open(direccion, mode);
-	if (fd_writer == -1){
-		perror("Error");
-		return -1;
-	}
+	CHECK_ERROR(fd_writer);
 	
 	int capacidad_sala = capacidad_sala();
 	int asientos_ocupados = asientos_ocupados();
@@ -140,10 +151,7 @@ int recupera_estado_sala (char* ruta_fichero){
 	}
 	
 	int fd = open(ruta_fichero, O_RDONLY);
-	if (fd_reader == -1){
-		perror("Error");
-		return -1;
-	}
+	CHECK_ERROR(fd);
 	
 	int datos_sala [2];
 	for(int i = 0; i<2; i++){
