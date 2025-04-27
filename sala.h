@@ -27,6 +27,9 @@ extern int crea_sala(int capacidad);
 
 extern int elimina_sala();
 
+extern int reemplaaza_sala(int* asientos, int capacidad, int asientos_ocupados);
+
+extern int* get_sala();
 
 /// Clase aux_test_sala.c
 
