@@ -98,6 +98,16 @@ int crea_sala(int capacidad) {
     return capacidad;
 }
 
+int reemplaaza_sala(int* asientos, int capacidad, int asientos_ocupados) {
+    if (sala == NULL) return -1;
+    free(sala);
+    int* sala = asientos;
+    if (sala == NULL) return -1;
+    cap_sala = capacidad;
+    ocupados = asientos_ocupados;
+    return capacidad;
+}
+
 
 /**
  * Libera la memoria asociada a la sala.
