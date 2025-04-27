@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <sys/wait.h>	
 #include <error.h>
+#include <signal.h>
 
 #include <ctype.h>
-#include <poll.h>
 #include <string.h>
 
 #ifndef programa_principal			
@@ -153,6 +153,30 @@ void ver_salas(){
 	puts("}");		
 }
 
+int cerrar_salas() {
+
+	struct Sucursal sucursal;
+	if (hijos_vigentes == 0) {
+		 return 0;
+	}
+	
+	int sucursales_contadas = 0;
+	printf("{");
+	int i = 0;
+	while(sucursales_contadas < hijos_vigentes){
+		sucursal = sucursales[i++];
+		if (sucursal.pid_proceso > 0) {
+			int res = kill(-sucursal.pid_proceso, SIGTERM);
+			if (res == -1) {
+			    perror("Error al enviar la señal de cierre");
+			    return -1;
+			}
+		}
+		sucursales_contadas++;
+	}
+	return 0;		
+}
+
 void crea_sucursal(char* ciudad, char* capacidad){
 	
 	pid_t pid_creado = fork();
@@ -164,7 +188,13 @@ void crea_sucursal(char* ciudad, char* capacidad){
 	}
 	
 	if (pid_creado == 0) {
-		int ret = execlp("gnome-terminal", "gnome-terminal", "--wait", "--", "./sala", ciudad, capacidad, NULL);
+	
+	        if (setpgid(0, 0) == -1) {
+	                perror("Error en la formación de grupos de PID");
+	                exit(1);
+	        }
+	        
+	        int ret = execlp("gnome-terminal", "gnome-terminal", "--wait", "--", "./sala", ciudad, capacidad, NULL);
 		if (ret == -1) {
 			perror("No se pudo crear una nueva sala.");
 			exit(1);
@@ -210,72 +240,67 @@ void vigila_hijo() {
 	
 int main(int argc, char* argv[]) {
 	
-	char command[MAX_COMMAND_LEN];
-	int poll_val;
+	signal(SIGCHLD, vigila_hijo);
 	
-	struct pollfd polls[1];
-	polls[0].fd = STDIN_FILENO;
-	polls[0].events = POLLIN;
+	char command[MAX_COMMAND_LEN];
 
-    puts("Bienvenido al gestor de sucursales. Introduzca opción:");
+        puts("Bienvenido al gestor de sucursales. Introduzca opción:");
 	printf("Gestor de sucursales>> ");
 	fflush(stdout); 
 		
 	while (1) {
-		vigila_hijo();
-	    poll_val = poll(polls, 1, 0);
-	    
-	    if (poll_val == -1) {
-	    
-	    	perror("poll() generó un error");
-	    	exit(1);
-	    	
-	    } else if (poll_val > 0) {
-
-			fgets(command, MAX_COMMAND_LEN, stdin);
-			command[strlen(command) - 1] = '\0';
-			char* arg1 = strtok(command, " ");
-			
-			if (arg1 == NULL) {
-				END_COMMAND;
-			}
-			
-			if (!strcmp(arg1, "help")) {
-			    printHelp();
-			    END_COMMAND;
-			}
-			
-			if (!strcmp(arg1, "cerrar_gestor")) {
-			    exit(0);
-			}
-			
-			
-			if (!strcmp(arg1, "crear_sucursal")) {
-				char* nombre = strtok(NULL, "");
-				char* capacidad;
-				
-				if(nombre) nombre = extraer_datos(nombre, &capacidad);
-				else puts("Faltan parámetros para crear la sucursal. Escriba \"help\" para leer la guía de uso.");
-				if (nombre == 0){END_COMMAND}
-			    if (capacidad == 0){
-			    	puts("La capacidad tiene que ser un número mayor que 0. Escriba \"help\" para leer la guía de uso.");
-			    	END_COMMAND
-			    }
-			    crea_sucursal(nombre, capacidad);
-				printf("==========\nSe ha creado la sala %s\ncon capacidad %s \n==========\n", nombre, capacidad);	 
-			    END_COMMAND;
-			}
-			
-			if (!strcmp(arg1, "ver_salas")) {
-			    ver_salas();
-			    END_COMMAND;
-			}
-		   
-
-			puts("No se ha reconocido el comando. Escriba \"help\" para leer la guía de uso.");
+            
+		fgets(command, MAX_COMMAND_LEN, stdin);
+		command[strlen(command) - 1] = '\0';
+		char* arg1 = strtok(command, " ");
+		
+		if (arg1 == NULL) {
 			END_COMMAND;
 		}
+		
+		if (!strcmp(arg1, "help")) {
+		    printHelp();
+		    END_COMMAND;
+		}
+		
+		if (!strcmp(arg1, "cerrar_gestor")) {
+		    if (hijos_vigentes > 0) {
+		        puts("No puede cerrar el gestor. Debe esperar al cierre de las sucursales.");
+		        END_COMMAND;
+		    }
+		    exit(0);
+		}
+		
+		if (!strcmp(arg1, "cerrar_salas")) {
+		    cerrar_salas();
+		}
+		
+		if (!strcmp(arg1, "crear_sucursal")) {
+			char* nombre = strtok(NULL, "");
+			char* capacidad;
+			
+			if(nombre) nombre = extraer_datos(nombre, &capacidad);
+			else puts("Faltan parámetros para crear la sucursal. Escriba \"help\" para leer la guía de uso.");
+			if (nombre == 0){END_COMMAND}
+		    if (capacidad == 0){
+		    	puts("La capacidad tiene que ser un número mayor que 0. Escriba \"help\" para leer la guía de uso.");
+		    	END_COMMAND
+		    }
+		    crea_sucursal(nombre, capacidad);
+			printf("==========\nSe ha creado la sala %s\ncon capacidad %s \n==========\n", nombre, capacidad);	 
+		    END_COMMAND;
+		}
+		
+		if (!strcmp(arg1, "ver_salas")) {
+		    ver_salas();
+		    END_COMMAND;
+		}
+	   
+
+		puts("No se ha reconocido el comando. Escriba \"help\" para leer la guía de uso.");
+		END_COMMAND;
 	}
+	
 }
 
 

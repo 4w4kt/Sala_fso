@@ -1,16 +1,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
 #include "sala.h"
 #define MAX_COMMAND_LEN 100
 
 void printHelp() {
-    puts("================ GUÕA DE USO ================");
+    puts("================ GU√çA DE USO ================");
     puts("- reserva <id-persona>: reserva un asiento para la persona con ese id");
     puts("- libera <id-persona>: libera el asiento ocupado por la persona con ese id");
     puts("- estado_asiento <id-asiento>: informa sobre el estado del asiento con ese id");
-    puts("- asientos_libres: indica cu·ntos asientos libres hay en la sala");
-    puts("- asientos_ocupados: indica cu·ntos asientos ocupados hay en la sala");
+    puts("- asientos_libres: indica cu√°ntos asientos libres hay en la sala");
+    puts("- asientos_ocupados: indica cu√°ntos asientos ocupados hay en la sala");
     puts("- capacidad_sala: indica la capacidad de la sala");
     puts("- reserva_multiple <id1> <id2> ... <idn>: reserva, si es posible, ");
     puts( "                                          un asiento para todas las personas indicadas");
@@ -19,12 +21,22 @@ void printHelp() {
     puts("=============================================");
 }
 
+void cerrar_sala() {
+    puts("Cerramos la sala");
+    fflush(stdout);
+    sleep(1);
+    int retVal = asientos_libres();
+    elimina_sala();
+    exit(retVal != 0);
+}
 
 int main(int argc, char* argv[]) {
 
+    signal(SIGTERM, cerrar_sala);
+
     char command[MAX_COMMAND_LEN];
 
-    printf("Biaenvenido a la sala de teatro %s.\nSu capacidad es de %s.\n", argv[1], argv[2]);
+    printf("Bienvenido a la sala de teatro %s.\nSu capacidad es de %s.\n", argv[1], argv[2]);
     crea_sala(atoi(argv[2]));
 
     while(1) {
@@ -43,22 +55,22 @@ int main(int argc, char* argv[]) {
         if (!strcmp(arg1, "reserva") && arg2 != NULL) {
             int bookStatus = reserva_asiento(atoi(arg2));
             if (bookStatus == -1) puts("No pudo reservar el asiento.");
-            else puts("Se reservÛ el asiento.");
+            else puts("Se reserv√≥ el asiento.");
             continue;
         }
 
         if (!strcmp(arg1, "libera") && arg2 != NULL) {
             int freeStatus = levantarse(atoi(arg2));
             if (freeStatus == -1) puts("No se pudo liberar el asiento.");
-            else puts("Se liberÛ el asiento");
+            else puts("Se liber√≥ el asiento");
             continue;
         }
 
         if (!strcmp(arg1, "estado_asiento") && arg2 != NULL) {
             int seatStatus = estado_asiento(atoi(arg2));
-            if (seatStatus == 0) puts("El asiento est· libre;");
+            if (seatStatus == 0) puts("El asiento est√° libre;");
             else if (seatStatus == -1) puts ("Se produjo un error.");
-            else printf("El asiento est· ocupado por %d.", seatStatus);
+            else printf("El asiento est√° ocupado por %d.", seatStatus);
             continue;
         }
 
@@ -106,9 +118,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (!strcmp(arg1, "cerrar_sala")) {
-        	int retVal = asientos_libres();
-            elimina_sala();
-            exit(retVal != 0);
+            cerrar_sala();
         }
 
         if (!strcmp(arg1, "help")) {
@@ -116,6 +126,6 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        puts("No se ha reconocido el comando. Escriba \"help\" para leer la guÌa de uso.");
+        puts("No se ha reconocido el comando. Escriba \"help\" para leer la gu√≠a de uso.");
     }
 }
