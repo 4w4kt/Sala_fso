@@ -83,11 +83,40 @@ int main(int argc, int argv) {
 	}
 
 	if (!strcmp(option, "anula")) {
+
 	
 	}
 	
 	if (!strcmp(option, "estado")) {
-	
+		int n_asientos;
+		
+		int opt = getopt(argc, argv, "f:");
+		if (opt == -1) {
+			perror("Lectura de ruta incorrecta");
+			exit(1);
+		}
+		
+		char* dir = optarg;
+		int fd = open(dir, O_RDONLY);
+		CHECK_ERROR(fd);
+		SELECT_DATOS_SALA(fd, 0);
+		int accesos = 1;
+		int* sala = NULL;
+		while (sala == NULL && datos_sala[0]/accesos < 4) {
+			sala = malloc(sizeof(int) * (datos_sala[0] / accesos));
+			accesos *= 2;
+		}
+		int accesos_lectura = 0;
+		if (accesos == 1) {
+			reemplaza_sala(sala, datos_sala[0], datos_sala[1]);
+			estado_sala(dir);
+		}
+		printf("la capacidad de la sala es: %d y tiene %d asientos ocupados\n{ ", datos_sala[0], datos_sala[1]);
+		while (accesos > accesos_lectura) {
+			ssize_t bytes_leidos = read(fd, sala, sizeof(int) * datos_sala[0] / accesos);
+			CHECK_LEIDO(bytes_leidos);
+			accesos_lectura += bytes_leidos / sizeof(int);
+		}
 	}
 
 }
