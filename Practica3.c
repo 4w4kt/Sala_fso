@@ -5,22 +5,22 @@
 #include <stdlib.h>
 #include "sala.h"
 
-    
 
-int guardar_estado_sala(char* ruta_fichero){
+int guarda_estado_sala(char* ruta_fichero){
 	int mode = O_CREAT | O_WRONLY | O_TRUNC;
 	int fd = open(ruta_fichero, mode);
 	CHECK_ERROR(fd);
 	
-	int capacidad_sala = capacidad_sala();
-	ssize_t bytes_escritos = write(fd, &capacidad_sala, sizeof(int));
+	int cap_sala = capacidad_sala();
+	ssize_t bytes_escritos = write(fd, &cap_sala, sizeof(int));
 	CHECK_ESCRITO(bytes_escritos);
-	ssize_t bytes_escritos = write(fd, &asientos_ocupados(), sizeof(int));
+	int ocupados = asientos_ocupados();
+	bytes_escritos = write(fd, &ocupados, sizeof(int));
+	CHECK_ESCRITO(bytes_escritos); 
+	bytes_escritos = write(fd, get_sala(), sizeof(int) * cap_sala);
 	CHECK_ESCRITO(bytes_escritos);
-	ssize_t bytes_escritos = write(fd, &get_sala(), sizeof(int)*capacidad_sala);
-	CHECK_ESCRITO(bytes_escritos);
-	close(fd)
-	return;
+	close(fd);
+	return 0;
 }
 
 
@@ -30,11 +30,11 @@ int recupera_estado_sala(char* ruta_fichero){
 	
 	SELECT_DATOS_SALA(fd, 1);
 	
-	int* estado_asiento = malloc(sizeof(int) * capacidad_sala);
-	ssize_t bytes_leidos = read(fd, &estado_asiento, sizeof(int));
+	int* estado_asiento = malloc(sizeof(int) * datos_sala[0]);
+	bytes_leidos = read(fd, &estado_asiento, sizeof(int));
 	CHECK_LEIDO(bytes_leidos);
 	close(fd);
-	reemplaaza_sala(estado_asiento, datos_sala[0], datos_sala[1]);
+	reemplaza_sala(estado_asiento, datos_sala[0], datos_sala[1]);
 }
 
 
@@ -52,8 +52,8 @@ int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id
 		CHECK_LEIDO(bytes_leidos);
 
 		lseek(fd, sizeof(int)* id_asientos[i], SEEK_SET);
-		estado_asiento = estado_asiento(id_asiento[i]);
-		int bytes_escritos = write(fd, &estado_asiento, sizeof(int));
+		int estado = estado_asiento(id_asientos[i]);
+		int bytes_escritos = write(fd, &estado, sizeof(int));
 		CHECK_ESCRITO(bytes_escritos);
 		if(estado_asiento_antiguo == 0 && estado_asiento != 0){
 			asientos_ocupados++;
@@ -63,8 +63,8 @@ int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id
 			asientos_ocupados--;
 		}
 	}
-	lseek(fd, sizeof(int)* 2, SEEK_SET) //cambiamos el valor de los asientos ocupados
-	int bytes_escritos = write(fd, &asientos_ocupados, sizeof(int));
+	lseek(fd, sizeof(int)* 2, SEEK_SET); //cambiamos el valor de los asientos ocupados
+	ssize_t bytes_escritos = write(fd, &asientos_ocupados, sizeof(int));
 	CHECK_ESCRITO(bytes_escritos);
 	close(fd);
 	return 0;
@@ -82,11 +82,11 @@ int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* 
 		CHECK_LEIDO(bytes_leidos);
 		set_asiento(id_asientos[i], estado_asiento_antiguo);
 	}
-	lseek(fd, sizeof(int)* 2, SEEK_SET) //cambiamos el valor de los asientos ocupados
+	lseek(fd, sizeof(int)* 2, SEEK_SET); //cambiamos el valor de los asientos ocupados
 	return 0;
 }
 
-
+/*
 int main(int argc, char* argv[]){
 
 	if(argc < 3){
@@ -99,5 +99,6 @@ int main(int argc, char* argv[]){
 	}
 	copiar(argv[1], argv[2]);
 	
-	guardar_estado_sala(rutafichero);
+	guarda_estado_sala(rutafichero);
 }
+*/

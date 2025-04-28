@@ -1,5 +1,11 @@
+#include <stdio.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+#include "sala.h"
 
 #define MAX_RESERVAS_ANULADAS 150
 
@@ -11,8 +17,11 @@
 				*(asientos + n_asientos) = x;\
 				n_asientos++;\
 			}
+			
+#define PERSONA_CORRECTA(x)\
+      puts("A");
 
-int main(int argc, int argv) {
+int main(int argc, char* argv[]) {
 
 	if (argc < 4) {
 		perror("Número de argumentos incorrecto");
@@ -102,7 +111,7 @@ int main(int argc, int argv) {
 		for (int i = optind; i < argc; i++) {
 			n_asientos++;
 			if (n_asientos > max_asientos) {
-				free(asientos)
+				free(asientos);
 				asientos = NULL;
 				close(fd);
 				
@@ -137,20 +146,21 @@ int main(int argc, int argv) {
 	}
 
 	if (!strcmp(option, "anula")) {
+	        int opt;
 		struct option longopts[] = {
 			{"asientos", required_argument, NULL, 'a'},
 			{"personas", required_argument, NULL, 'p'},
 			{0, 0, 0, 0}
-		}
+		};
 		
 		int fd = open(dir, O_RDONLY);
 		CHECK_ERROR(fd);
 		SELECT_DATOS_SALA(fd, 0);
-		int capacidad = datos_sala[0]
+		int capacidad = datos_sala[0];
 		
 		int* asientos = malloc(MAX_RESERVAS_ANULADAS * sizeof(int));
 		int n_asientos = 0;
-		int asiento_personas = 0;
+		int asientos_personas = 0;
 		
 		int* asientos_invalidos = malloc(MAX_RESERVAS_ANULADAS * sizeof(int));
 		int n_asientos_invalidos = 0;
@@ -167,7 +177,7 @@ int main(int argc, int argv) {
 		        }
 		        if (opt == 'p' && asientos_personas <= 0) {
 		        		asientos_personas = -1;
-		        		*asientos = optarg;
+		        		*asientos = atoi(optarg);
 		        		n_asientos++;
 		        		continue;
 		        }
@@ -177,9 +187,9 @@ int main(int argc, int argv) {
 				perror("No se han indicado correctamente las reservas a anular");
 				exit(1);
 		}
-		if (asientos_personas) > 0) {
+		if (asientos_personas > 0) {
 				for (int i = optind; i < argc; i++) {
-						ASIENTO_CORRECTO(atoi(arvg[optind]));
+						ASIENTO_CORRECTO(atoi(argv[optind]));
 				}
 		} else {
 				for (int i = optind; i < argc; i++) {
@@ -211,12 +221,13 @@ int main(int argc, int argv) {
 		if (accesos == 1) {
 			reemplaza_sala(sala, datos_sala[0], datos_sala[1]);
 			estado_sala(dir);
-			libera_sala(sala);
+			elimina_sala(sala);
 			close(fd);
 			exit(0);
 		}
 			
 		// falta comprobar el caso de que no se pueda cargar la sala
+		/*
 		printf("la capacidad de la sala es: %d y tiene %d asientos ocupados\n{ ", datos_sala[0], datos_sala[1]);
 		int bytes_leidos = 1;
 		while (bytes_leidos > 0){
@@ -228,8 +239,8 @@ int main(int argc, int argv) {
 			}
 			printf("}\n");
 		close(fd);
-		}
-
+		*/
+	}
 
 
 	if(!strcmp(option, "compara")) {
@@ -237,7 +248,7 @@ int main(int argc, int argv) {
 			perror("Se esperaban dos argumentos ejemplo: ./misala compara sala1.txt sala2.txt");
 			exit(1);
 		}
-		if(!strcomp(argv[1], argv[2])){
+		if(!strcmp(argv[1], argv[2])){
 			return 0;
 		}
 		
@@ -248,9 +259,9 @@ int main(int argc, int argv) {
 		int datos_sala_1[2];
 		int datos_sala_2[2];
 		ssize_t bytes_leidos = read(fd1, &datos_sala_1, sizeof(int)*2);
-		CKECK_LEIDO(bytes_leidos); 
+		CHECK_LEIDO(bytes_leidos); 
 		ssize_t bytes_leidos2 = read(fd2, &datos_sala_2, sizeof(int)*2);
-		CKECK_LEIDO(bytes_leidos2);
+		CHECK_LEIDO(bytes_leidos2);
 		if(datos_sala_1[0] != datos_sala_2[0] || datos_sala_1[1] != datos_sala_2[1]){
 			printf("Las salas no son iguales\n");
 			close(fd1);
@@ -267,7 +278,7 @@ int main(int argc, int argv) {
 			accesos *= 2;
 		}
 		accesos /= 2;
-		if(sala_1 == -1  || sala_2 == -1){
+		if((sala_1 == NULL  || sala_2 == NULL) && errno == ENOMEM){
 			perror("Error al asignar memoria para las dos salas");
 			exit(1);
 		}
@@ -282,8 +293,8 @@ int main(int argc, int argv) {
 					printf("Las salas no son iguales\n");
 					close(fd1);
 					close(fd2);
-					libera_sala(sala_1);
-					libera_sala(sala_2);
+					elimina_sala(sala_1);
+					elimina_sala(sala_2);
 					return 1;
 					exit(1);
 				}

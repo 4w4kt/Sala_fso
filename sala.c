@@ -53,7 +53,7 @@ int estado_asiento(int id_asiento){
 }
 
 int set_asiento(int id_asiento, int id_persona){
-    if (id_asiento > cap_sala || id_asiento <= 0) return -1;
+    if (id_asiento > cap_sala || id_asiento <= 0 || id_persona <=0) return -1;
     if(*(sala + id_asiento - 1) == 0 && id_persona > 0) {
         *(sala + id_asiento - 1) = id_persona;
         ocupados++;
@@ -63,6 +63,7 @@ int set_asiento(int id_asiento, int id_persona){
         ocupados--;
         return 0;
     }
+    *(sala + id_asiento - 1) = id_persona
 }
 
 /**
@@ -110,7 +111,7 @@ int crea_sala(int capacidad) {
     return capacidad;
 }
 
-int reemplaaza_sala(int* asientos, int capacidad, int asientos_ocupados) {
+int reemplaza_sala(int* asientos, int capacidad, int asientos_ocupados) {
     if (sala == NULL) return -1;
     free(sala);
     int* sala = asientos;
