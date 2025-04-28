@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
 				
 				if (!strcmp(optarg, "o")) {
 					override = 1;
+					dir = argv[optind];
 					continue;
 				}
 				dir = optarg;
@@ -58,19 +59,6 @@ int main(int argc, char* argv[]) {
 				continue;
 			}
 			
-		}
-		
-		if (override) {
-			
-			puts("heyheyhey");
-		
-			while ((opt = getopt(argc, argv, "fo:c:")) != -1) {
-				printf("%c\n", opt);
-				if (opt == 'o') {
-					dir = optarg;
-					break;
-				}	
-			}
 		}
 
 		// Gestionar archivo
@@ -132,16 +120,19 @@ int main(int argc, char* argv[]) {
 			perror("No se pudo crear la sala");
 			exit(1);
 		}
+		puts("shiaaatt");
 		if (recupera_estado_sala(dir) == -1) {
 			elimina_sala();
 			perror("No se pudo recuperar el estado de la sala");
 			exit(1);
 		}
+		puts("shit");
 		if (reserva_multiple(n_asientos, asientos) == -1) {
 			elimina_sala();
 			perror("Reserva de los asientos fallida");
 			exit(1);
 		}
+		
 		if (guarda_estado_sala(dir) == -1) {
 			elimina_sala();
 			perror("No se pudo guardar la sala actualizada");
