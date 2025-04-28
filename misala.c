@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <getopt.h>
 
 int main(int argc, int argv) {
 
@@ -125,8 +126,9 @@ int main(int argc, int argv) {
 	}
 
 	if (!strcmp(option, "anula")) {
-
-	
+		struct option longopts[] = {
+			{"asientos", required_argument, NULL, 
+		}
 	}
 	
 	if (!strcmp(option, "estado")) {
