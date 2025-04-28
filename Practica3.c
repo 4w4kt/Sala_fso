@@ -92,11 +92,26 @@ int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id
 			asientos_ocupados--;
 		}
 	}
-	lseek(fd, sizeof(int * 2, SEEK_SET)) //cambiamos el valor de los asientos ocupados
+	lseek(fd, sizeof(int)* 2, SEEK_SET) //cambiamos el valor de los asientos ocupados
 	bytes_escritos = write(fd, &asientos_ocupados, sizeof(int));
 	close(fd);
 	return 0;
+}
 
+int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
+	int fd = open(ruta_fichero, O_RDWR);
+	CHECK_ERROR(fd);
+	SELECT_DATOS_SALA(fd);
+	
+	int estado_asiento_antiguo;
+	for(int i = 0; i < num_asientos; i++){
+		lseek(fd, sizeof(int)* id_asientos[i], SEEK_SET);
+		ssize_t bytes_leidos = read(fd, &estado_asiento_antiguo, sizeof(int));
+		CHECK_LEIDO(bytes_leidos);
+		set_asiento(id_asientos[i], estado_asiento_antiguo);
+	}
+	lseek(fd, sizeof(int)* 2, SEEK_SET) //cambiamos el valor de los asientos ocupados
+	return 0;
 }
 
 
