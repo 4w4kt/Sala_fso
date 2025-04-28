@@ -18,22 +18,22 @@
 
 #define CHECK_ERROR(x)         \
 	   if ((x) == -1) {            \
-	   perror("Error en la lectura"); \
+	   perror("Error en la apertura"); \
 	   return -1;              \
 	}
 
 #define CHECK_ESCRITO(x)         \
 	   if ((x) == -1) {            \
-	   perror("Error en escribiendo en el archivo");		\
+	   perror("Error en la escritura del archivo");		\
 		close(x);			\
 		return -1;			\
 	}
 
-#define SELECT_DATOS_SALA(fd) \
+#define SELECT_DATOS_SALA(fd, control) \
 	int datos_sala [2];								\
 	ssize_t bytes_leidos = read(fd, &datos_sala, sizeof(int)*2);			\
-	CKECK_LEIDO(bytes_leidos);                    \
-	if(capacidad_sala() != datos_sala[0] ){							\
+	CKECK_LEIDO(bytes_leidos);                    									\
+	if(control && capacidad_sala() != datos_sala[0]){							\
 		perror("La sala creada tiene una capacidad distinta a la que quiere restaurar");		\
         close(fd);                                              \
 		return -1;				\
