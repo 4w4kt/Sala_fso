@@ -31,6 +31,8 @@ extern int reemplaaza_sala(int* asientos, int capacidad, int asientos_ocupados);
 
 extern int* get_sala();
 
+extern int set_asiento(int id_asiento, int id_persona);
+
 /// Clase aux_test_sala.c
 
 extern int estado_sala(char* titulo);
