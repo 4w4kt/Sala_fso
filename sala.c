@@ -53,17 +53,13 @@ int estado_asiento(int id_asiento){
 }
 
 int set_asiento(int id_asiento, int id_persona){
-    if (id_asiento > cap_sala || id_asiento <= 0 || id_persona <=0) return -1;
-    if(*(sala + id_asiento - 1) == 0 && id_persona > 0) {
-        *(sala + id_asiento - 1) = id_persona;
-        ocupados++;
-        return 0;
-    }
-    if(*(sala + id_asiento - 1) != 0 && id_persona == 0){
-        ocupados--;
-        return 0;
-    }
-    *(sala + id_asiento - 1) = id_persona
+    if (id_asiento > cap_sala || id_asiento <= 0 || id_persona < 0) return -1;
+    
+    if(*(sala + id_asiento - 1) == 0 && id_persona > 0) ocupados++;
+    else if(*(sala + id_asiento - 1) != 0 && id_persona == 0) ocupados--;
+        
+    *(sala + id_asiento - 1) = id_persona;
+    return 0;
 }
 
 /**
