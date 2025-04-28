@@ -65,12 +65,11 @@ int main(int argc, int argv) {
 			perror("No se pudo guardar el estado de la sala en la ruta indicada");
 			exit(1);
 		}
+		elimina_sala();
 		exit(0);
 	}
 	
 	if (!strcmp(option, "reserva")) {
-	
-		int n_asientos;
 		
 		int opt = getopt(argc, argv, "f:");
 		if (opt == -1) {
@@ -79,7 +78,50 @@ int main(int argc, int argv) {
 		}
 		
 		char* dir = optarg;
+		
+		int fd = open(dir, O_RDONLY);
+		CHECK_ERROR(fd);
+		SELECT_DATOS_SALA(fd, 0);
 	
+		int max_asientos = datos_sala[0] - datos_sala[1];
+		int* asientos = malloc(max_asientos * sizeof(int));
+		int n_asientos = 0;
+
+		for (int i = optind; i < argc; i++) {
+			n_asientos++;
+			if (n_asientos > max_asientos) {
+				free(asientos)
+				asientos = NULL;
+				close(fd);
+				
+				perror("Ha intentado reservar más asientos de los disponibles");
+				exit(1);
+			}
+			*(asientos + n_asientos - 1) = atoi(argv[i]);
+		}
+		
+		if (crea_sala(datos_sala[0]) == -1) {
+			perror("No se pudo crear la sala");
+			exit(1);
+		}
+		if (recupera_estado_sala(dir) == -1) {
+			elimina_sala();
+			perror("No se pudo recuperar el estado de la sala");
+			exit(1);
+		}
+		if (reserva_multiple(n_asientos, asientos) == -1) {
+			elimina_sala();
+			perror("Reserva de los asientos fallida");
+			exit(1);
+		}
+		if (guarda_estado_sala(dir) == -1) {
+			elimina_sala();
+			perror("No se pudo guardar la sala actualizada");
+			exit(1);
+		}
+		
+		elimina_sala();
+		exit(0);
 	}
 
 	if (!strcmp(option, "anula")) {
