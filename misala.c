@@ -20,23 +20,23 @@ int main(int argc, int argv) {
 			if (opt == 'f') {
 				if (optarg == "o") {
 					override = 1;
-					break;
+					continue;
 				}
 				
 				dir = optarg;
-				break;
+				continue;
 			}
 			
 			if (opt == 'c') {
 				cap = atoi(optarg);
-				break;
+				continue;
 			}
 			
 		}
 		
 		if (override) {
 		
-			while (opt = getopt(argc, argv, "f:c:") != -1) {
+			while (opt = getopt(argc, argv, "fo:c:") != -1) {
 			
 				if (opt == 'o') {
 					dir = optarg;
@@ -44,18 +44,18 @@ int main(int argc, int argv) {
 				}	
 			}
 		}
-		
+
 		// Gestionar archivo
-		if (override && (access(dir, W_OK) != 0 || errno == EACCES)) {
+		if (override) {
+			if (access(dir, W_OK) != 0 && errno == EACCES) {
 				perror("No tiene permisos de escritura para la ruta indicada");
 				exit(1);
 			}
-		}
-		if (!access(dir, F_OK)) {
-			perror("La ruta ya existe pero no ha indicado la opción de sobreescritura");
+		} else if (!access(dir, F_OK)) {
+			perror("La ruta ya existe pero no se ha indicado la opción de sobreescritura");
 			exit(1);
 		}
-		
+
 		if (crea_sala(cap) == -1) {
 			perror("No se pudo crear la sala");
 			exit(1);
