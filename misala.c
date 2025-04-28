@@ -9,10 +9,10 @@ int main(int argc, int argv) {
 	}
 
 	char* option = argv[1];
+	char* dir;
 	
 	if (!strcmp(option, "crea")) {
 		int opt;
-		char* dir;
 		int override = 0;
 		int cap;
 		
@@ -78,7 +78,7 @@ int main(int argc, int argv) {
 			exit(1);
 		}
 		
-		char* dir = optarg;
+		dir = optarg;
 		
 		int fd = open(dir, O_RDONLY);
 		CHECK_ERROR(fd);
@@ -127,7 +127,20 @@ int main(int argc, int argv) {
 
 	if (!strcmp(option, "anula")) {
 		struct option longopts[] = {
-			{"asientos", required_argument, NULL, 
+			{"asientos", required_argument, NULL, 'a'},
+			{"personas", required_argument, NULL, 'p'},
+			{0, 0, 0, 0}
+		}
+		
+		int asientos = 0;
+		
+		while (opt = getopt_long_only(argc, argv, "f:", longopts, NULL) != -1) {
+		        if (opt == 'f') {
+		                dir = optarg;
+		        }
+		        if (opt == 'a' && asientos >= 0) {
+		                asientos = ;
+		        }
 		}
 	}
 	
@@ -140,7 +153,7 @@ int main(int argc, int argv) {
 			exit(1);
 		}
 		
-		char* dir = optarg;
+		dir = optarg;
 		int fd = open(dir, O_RDONLY);
 		CHECK_ERROR(fd);
 		SELECT_DATOS_SALA(fd, 0);
