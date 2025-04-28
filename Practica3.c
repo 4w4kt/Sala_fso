@@ -27,18 +27,21 @@ int guarda_estado_sala(char* ruta_fichero){
 int recupera_estado_sala(char* ruta_fichero){	
 	int fd = open(ruta_fichero, O_RDONLY);
 	CHECK_ERROR(fd);
-	
 	SELECT_DATOS_SALA(fd, 1);
-	
 	int* estado_asiento = malloc(sizeof(int) * datos_sala[0]);
-	bytes_leidos = read(fd, &estado_asiento, sizeof(int));
+	if(estado_asiento == -1){
+		perror("No se ha podido reservar memoria para el estado de la sala");
+		close(fd);
+		return -1;
+	}
+	bytes_leidos = read(fd, &estado_asiento, sizeof(int)* datos_sala[0]);
 	CHECK_LEIDO(bytes_leidos);
 	close(fd);
 	reemplaza_sala(estado_asiento, datos_sala[0], datos_sala[1]);
 }
 
 
-int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
+int guarda_estado_parcial_sala (char* ruta_fichero, int num_asientos, int* id_asientos){
 	int fd = open(ruta_fichero, O_RDWR);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);
@@ -47,11 +50,11 @@ int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id
 	int asientos_ocupados = datos_sala[1];
 
 	for(int i = 0; i < num_asientos; i++){
-		lseek(fd, sizeof(int)* id_asientos[i], SEEK_SET);
+		lseek(fd, sizeof(int)* (id_asientos[i] + 1), SEEK_SET);
 		ssize_t bytes_leidos = read(fd, &estado_asiento_antiguo, sizeof(int));
 		CHECK_LEIDO(bytes_leidos);
 
-		lseek(fd, sizeof(int)* id_asientos[i], SEEK_SET);
+		lseek(fd, sizeof(int)* (id_asientos[i] + 1), SEEK_SET);
 		int estado = estado_asiento(id_asientos[i]);
 		int bytes_escritos = write(fd, &estado, sizeof(int));
 		CHECK_ESCRITO(bytes_escritos);
@@ -70,7 +73,7 @@ int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id
 	return 0;
 }
 
-int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
+int recupera_estado_parcial_sala (char* ruta_fichero, int num_asientos, int* id_asientos){
 	int fd = open(ruta_fichero, O_RDWR);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);

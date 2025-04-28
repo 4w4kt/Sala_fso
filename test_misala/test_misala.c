@@ -27,29 +27,6 @@ int crea_test_sh(char* metodo){
     return WEXITSTATUS(status);
     }
 
-
-    int test_crea() {
-        // no existe
-        assert(crea_test_sh("./mi_sala crea -f crear_sala_f_1.txt -c 20") == crea_test_sh("./mi_sala crea -fo crear_sala_fo_1.txt -c 20"));
-
-        // existe
-        assert(crea_test_sh("./mi_sala crea -f crear_sala_f_1.txt -c 20") == 1);
-        assert(crea_test_sh("./mi_sala crea -fo crear_sala_fo_1.txt -c 20") == 0);
-
-        // capacidad negativa && existe
-        assert(crea_test_sh("./mi_sala crea -f crear_sala_f_1.txt -c -20") == 1);
-        assert(crea_test_sh("./mi_sala crea -fo crear_sala_fo_1.txt -c -20") == 1);
-        // capacidad negativa && no existe 
-        assert(crea_test_sh("./mi_sala crea -f noexiste.txt -c -20") == 1);
-        assert(crea_test_sh("./mi_sala crea -fo noexiste.txt -c -20") == 1);
-
-        // no tengo permisos
-        assert(crea_test_sh("./mi_sala crea -f sin_permisos.txt -c 20") == 1);
-        assert(crea_test_sh("./mi_sala crea -fo sin_permisos.txt -c 20") == 1);
-        
-    }
-    
-
     int setup(){
         int fd = open(sala_vacia.txt, O_RDWR|O_CREAT|O_TRUNC);
         CHECK_ERROR (fd);
@@ -76,6 +53,43 @@ int crea_test_sh(char* metodo){
         close(fd);    
     }
 
+    int test_crea() {
+        // argumentos incompletos
+        assert(crea_test_sh("./misala crea -c 20") == 1);
+        assert(crea_test_sh("./misala crea -f sala_f_1.txt") == 1);
+        assert(crea_test_sh("./misala crea -fo sala_fo_1.txt") == 1);ç
+
+        // no existe
+        assert(crea_test_sh("./misala crea -f sala_f_1.txt -c 20") == 0);
+        assert(crea_test_sh("./misala crea -fo sala_fo_1.txt -c 20") == 0);
+
+        // existe
+        assert(crea_test_sh("./misala crea -f sala_f_1.txt -c 20") == 1);
+        assert(crea_test_sh("./misala crea -fo sala_fo_1.txt -c 20") == 0);
+
+        // capacidad negativa && existe
+        assert(crea_test_sh("./misala crea -f sala_f_1.txt -c -20") == 1);
+        assert(crea_test_sh("./misala crea -fo sala_fo_1.txt -c -20") == 1);
+        // capacidad negativa && no existe 
+        assert(crea_test_sh("./misala crea -f noexiste.txt -c -20") == 1);
+        assert(crea_test_sh("./misala crea -fo noexiste.txt -c -20") == 1);
+
+        // no tengo permisos
+        assert(crea_test_sh("./misala crea -f sin_permisos.txt -c 20") == 1);
+        assert(crea_test_sh("./misala crea -fo sin_permisos.txt -c 20") == 1);
+    }
+    
+    int test_reserva(){
+        // no existe
+        assert(crea_test_sh("./misala reserva -f noexiste.txt ") == 1);
+        assert(crea_test_sh("./mi_sala reserva -fo noexiste.txt -a 1 -p 1") == 1);
+        // existe
+        assert(crea_test_sh("./misala reserva -f sala_f_1.txt -a 1 -p 1") == 0);
+        assert(crea_test_sh("./misala reserva -fo sala_fo_1.txt -a 1 -p 1") == 0);
+    }
+
+
+
 
 
 
@@ -86,5 +100,6 @@ int crea_test_sh(char* metodo){
 int main(){
     setup();
     test_crea();
+    test_reserva();
 
 }
