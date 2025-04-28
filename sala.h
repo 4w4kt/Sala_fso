@@ -35,6 +35,7 @@
 	CKECK_LEIDO(bytes_leidos);                    \
 	if(capacidad_sala() != datos_sala[0] ){							\
 		perror("La sala creada tiene una capacidad distinta a la que quiere restaurar");		\
+        close(fd);                                              \
 		return -1;				\
 	}
 /// Clase sala.c
