@@ -5,35 +5,6 @@
 #include <stdlib.h>
 #include "sala.h"
 
-#define CHECK_LEIDO(x)         \
-    if ((x) == -1) {            \
-        perror("Error en la lectura"); \
-		close(x)				\
-        return -1;              \
-    }
-
-#define CHECK_ERROR(x)         \
-	   if ((x) == -1) {            \
-	   perror("Error en la lectura"); \
-	   return -1;              \
-	}
-
-#define CHECK_ESCRITO(x)         \
-	   if ((x) == -1) {            \
-	   perror("Error en escribiendo en el archivo");		\
-		close(x);			\
-		return -1;			\
-	}
-
-#define SELECT_DATOS_SALA(fd) \
-	int datos_sala [2];								\
-	ssize_t bytes_leidos = read(fd, &datos_sala, sizeof(int)*2);			\
-	CKECK_LEIDO(bytes_leidos);
-	if(capacidad_sala() != datos_sala[0] ){							\
-		perror("La sala creada tiene una capacidad distinta a la que quiere restaurar");		\
-		return -1;				\
-	}
-
     
 
 int guardar_estado_sala(char* ruta_fichero){
