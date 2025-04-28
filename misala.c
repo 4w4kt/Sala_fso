@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 			
 		}
 
-		// Gestionar archivo
+		
 		if (override) {
 			if (access(dir, W_OK) != 0 && errno == EACCES) {
 				perror("No tiene permisos de escritura para la ruta indicada");
@@ -98,10 +98,22 @@ int main(int argc, char* argv[]) {
 		int fd = open(dir, O_RDONLY);
 		CHECK_ERROR(fd);
 		SELECT_DATOS_SALA(fd, 0);
+		
+		if (crea_sala(datos_sala[0]) == -1) {
+			perror("No se pudo crear la sala");
+			exit(1);
+		}
 	
 		int max_asientos = datos_sala[0] - datos_sala[1];
 		int* asientos = malloc(max_asientos * sizeof(int));
 		int n_asientos = 0;
+		
+		if (asientos == NULL) {
+			perror("Error en la alocación de memoria");
+			elimina_sala();
+			close(fd);
+			exit(-1);
+		}
 
 		for (int i = optind; i < argc; i++) {
 			n_asientos++;
@@ -116,17 +128,13 @@ int main(int argc, char* argv[]) {
 			*(asientos + n_asientos - 1) = atoi(argv[i]);
 		}
 		
-		if (crea_sala(datos_sala[0]) == -1) {
-			perror("No se pudo crear la sala");
-			exit(1);
-		}
-		puts("shiaaatt");
 		if (recupera_estado_sala(dir) == -1) {
 			elimina_sala();
 			perror("No se pudo recuperar el estado de la sala");
+			close(fd);
 			exit(1);
 		}
-		puts("shit");
+		
 		if (reserva_multiple(n_asientos, asientos) == -1) {
 			elimina_sala();
 			perror("Reserva de los asientos fallida");
@@ -136,6 +144,7 @@ int main(int argc, char* argv[]) {
 		if (guarda_estado_sala(dir) == -1) {
 			elimina_sala();
 			perror("No se pudo guardar la sala actualizada");
+			close(fd);
 			exit(1);
 		}
 		
@@ -248,22 +257,19 @@ int main(int argc, char* argv[]) {
 		CHECK_ERROR(fd);
 		SELECT_DATOS_SALA(fd, 0);
 		int accesos = 1;
-		int* sala = NULL;
-		while (sala == NULL) {
-			sala = malloc(sizeof(int) * (datos_sala[0] / accesos));
-			accesos *= 2;
-		}
-		accesos /= 2;
+		while (crea_sala(datos_sala[0] / accesos) == -1) accesos *= 2;
+		
 		if (accesos == 1) {
-			reemplaza_sala(sala, datos_sala[0], datos_sala[1]);
-			estado_sala(dir);
-			elimina_sala(sala);
+			recupera_estado_sala(dir);
+			estado_sala("========= Estado de la sala =========");
+			elimina_sala();
 			close(fd);
 			exit(0);
 		}
 			
 		// falta comprobar el caso de que no se pueda cargar la sala
 		/*
+		accesos /= 2;
 		printf("la capacidad de la sala es: %d y tiene %d asientos ocupados\n{ ", datos_sala[0], datos_sala[1]);
 		int bytes_leidos = 1;
 		while (bytes_leidos > 0){
@@ -280,11 +286,8 @@ int main(int argc, char* argv[]) {
 
 
 	if(!strcmp(option, "compara")) {
-		if(argc != 3){
-			perror("Se esperaban dos argumentos ejemplo: ./misala compara sala1.txt sala2.txt");
-			exit(1);
-		}
-		if(!strcmp(argv[1], argv[2])){
+		if(!strcmp(argv[2], argv[3])){
+			puts("son iguales");
 			return 0;
 		}
 		
@@ -319,23 +322,35 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 		bytes_leidos = 1;
-		while (bytes_leidos > 0){
+		while (1){
 			ssize_t bytes_leidos = read(fd1, sala_1, sizeof(int) * (datos_sala_1[0] / accesos));
 			CHECK_LEIDO(bytes_leidos);
 			ssize_t bytes_leidos2 = read(fd2, sala_2, sizeof(int) * (datos_sala_2[0] / accesos));
 			CHECK_LEIDO(bytes_leidos2);
-			for (int i = 0; i < bytes_leidos2*sizeof(int); i++) {
-				if (*(sala_1 + i) != *(sala_2 + i)) {
+			if(bytes_leidos != bytes_leidos2){
 					printf("Las salas no son iguales\n");
 					close(fd1);
 					close(fd2);
-					elimina_sala(sala_1);
-					elimina_sala(sala_2);
+					free(sala_1);
+					free(sala_2);
+					return 1;
+					exit(1);
+			}
+			if(bytes_leidos == 0) break;
+			
+			for (int i = 0; i < bytes_leidos2*sizeof(int) && i < datos_sala_2[0] + 2; i++) {
+				if (*(sala_1 + i) != *(sala_2 + i)) {
+					printf("Las salas no son iguales %d %d != %d\n", i, *(sala_1 + i) ,*(sala_2 + i) );
+					close(fd1);
+					close(fd2);
+					free(sala_1);
+					free(sala_2);
 					return 1;
 					exit(1);
 				}
 			}
 		}
+		puts("son iguales");
 		return 0;
 	}
 

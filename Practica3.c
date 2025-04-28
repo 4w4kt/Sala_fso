@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <error.h>
+#include <errno.h>
 #include <stdlib.h>
 #include "sala.h"
 
@@ -28,20 +28,23 @@ int recupera_estado_sala(char* ruta_fichero){
 	int fd = open(ruta_fichero, O_RDONLY);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);
-	int* estado_asiento = malloc(sizeof(int) * datos_sala[0]);
-	if(estado_asiento == -1){
+	
+	int* estado_asiento = calloc(datos_sala[0], sizeof(int));
+	
+	if(estado_asiento == NULL && errno == ENOMEM){
 		perror("No se ha podido reservar memoria para el estado de la sala");
 		close(fd);
 		return -1;
 	}
-	bytes_leidos = read(fd, &estado_asiento, sizeof(int)* datos_sala[0]);
+	
+	bytes_leidos = read(fd, estado_asiento, sizeof(int)* datos_sala[0]);
 	CHECK_LEIDO(bytes_leidos);
 	close(fd);
 	reemplaza_sala(estado_asiento, datos_sala[0], datos_sala[1]);
 }
 
 
-int guarda_estado_parcial_sala (char* ruta_fichero, int num_asientos, int* id_asientos){
+int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
 	int fd = open(ruta_fichero, O_RDWR);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);
@@ -73,7 +76,7 @@ int guarda_estado_parcial_sala (char* ruta_fichero, int num_asientos, int* id_as
 	return 0;
 }
 
-int recupera_estado_parcial_sala (char* ruta_fichero, int num_asientos, int* id_asientos){
+int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
 	int fd = open(ruta_fichero, O_RDWR);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);
