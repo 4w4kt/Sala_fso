@@ -1,6 +1,17 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#define MAX_RESERVAS_ANULADAS 150
+
+#define ASIENTO_CORRECTO(x)\
+			if (x < 0 || x >= capacidad) {\
+				*(asientos_invalidos + n_asientos_invalidos) = x;\
+				 n_asientos_invalidos++;\
+			} else {\
+				*(asientos + n_asientos) = x;\
+				n_asientos++;\
+			}
+
 int main(int argc, int argv) {
 
 	if (argc < 4) {
@@ -132,15 +143,48 @@ int main(int argc, int argv) {
 			{0, 0, 0, 0}
 		}
 		
-		int asientos = 0;
+		int fd = open(dir, O_RDONLY);
+		CHECK_ERROR(fd);
+		SELECT_DATOS_SALA(fd, 0);
+		int capacidad = datos_sala[0]
+		
+		int* asientos = malloc(MAX_RESERVAS_ANULADAS * sizeof(int));
+		int n_asientos = 0;
+		int asiento_personas = 0;
+		
+		int* asientos_invalidos = malloc(MAX_RESERVAS_ANULADAS * sizeof(int));
+		int n_asientos_invalidos = 0;
 		
 		while (opt = getopt_long_only(argc, argv, "f:", longopts, NULL) != -1) {
 		        if (opt == 'f') {
 		                dir = optarg;
+		                continue;
 		        }
-		        if (opt == 'a' && asientos >= 0) {
-		                asientos = ;
+		        if (opt == 'a' && asientos_personas >= 0) {
+		                asientos_personas = 1;
+		                ASIENTO_CORRECTO(atoi(optarg));
+		                continue;
 		        }
+		        if (opt == 'p' && asientos_personas <= 0) {
+		        		asientos_personas = -1;
+		        		*asientos = optarg;
+		        		n_asientos++;
+		        		continue;
+		        }
+		}
+		
+		if (asientos_personas == 0) {
+				perror("No se han indicado correctamente las reservas a anular");
+				exit(1);
+		}
+		if (asientos_personas) > 0) {
+				for (int i = optind; i < argc; i++) {
+						ASIENTO_CORRECTO(atoi(arvg[optind]));
+				}
+		} else {
+				for (int i = optind; i < argc; i++) {
+						PERSONA_CORRECTA(atoi(arvg[optind]));
+				}
 		}
 	}
 	
