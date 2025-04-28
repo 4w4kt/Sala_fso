@@ -144,21 +144,93 @@ int main(int argc, int argv) {
 		SELECT_DATOS_SALA(fd, 0);
 		int accesos = 1;
 		int* sala = NULL;
-		while (sala == NULL && datos_sala[0]/accesos < 4) {
+		while (sala == NULL) {
 			sala = malloc(sizeof(int) * (datos_sala[0] / accesos));
 			accesos *= 2;
 		}
-		int accesos_lectura = 0;
+		accesos /= 2;
 		if (accesos == 1) {
 			reemplaza_sala(sala, datos_sala[0], datos_sala[1]);
 			estado_sala(dir);
+			libera_sala(sala);
+			close(fd);
+			exit(0);
 		}
+			
+		// falta comprobar el caso de que no se pueda cargar la sala
 		printf("la capacidad de la sala es: %d y tiene %d asientos ocupados\n{ ", datos_sala[0], datos_sala[1]);
-		while (accesos > accesos_lectura) {
-			ssize_t bytes_leidos = read(fd, sala, sizeof(int) * datos_sala[0] / accesos);
+		int bytes_leidos = 1;
+		while (bytes_leidos > 0){
+			ssize_t bytes_leidos = read(fd, sala, sizeof(int) * (datos_sala_1[0] / accesos));
 			CHECK_LEIDO(bytes_leidos);
-			accesos_lectura += bytes_leidos / sizeof(int);
+			for (int i = 0; i < bytes_leidos/sizeof(int); i++) {
+					printf("%d, ", *(sala + i));
+				}
+			}
+			printf("}\n");
+		close(fd);
 		}
+
+
+
+	if(!strcmp(option, "compara")) {
+		if(argc != 3){
+			perror("Se esperaban dos argumentos ejemplo: ./misala compara sala1.txt sala2.txt");
+			exit(1);
+		}
+		if(!strcomp(argv[1], argv[2])){
+			return 0;
+		}
+		
+		int fd1 = open(argv[2], O_RDONLY);
+		CHECK_ERROR(fd1);
+		int fd2 = open(argv[3], O_RDONLY);
+		CHECK_ERROR(fd2);
+		int datos_sala_1[2];
+		int datos_sala_2[2];
+		ssize_t bytes_leidos = read(fd1, &datos_sala_1, sizeof(int)*2);
+		CKECK_LEIDO(bytes_leidos); 
+		ssize_t bytes_leidos2 = read(fd2, &datos_sala_2, sizeof(int)*2);
+		CKECK_LEIDO(bytes_leidos2);
+		if(datos_sala_1[0] != datos_sala_2[0] || datos_sala_1[1] != datos_sala_2[1]){
+			printf("Las salas no son iguales\n");
+			close(fd1);
+			close(fd2);
+			return 1;
+			exit(1);
+		}
+		int accesos = 1;
+		int* sala_1 = NULL;
+		int* sala_2 = NULL;
+		while (sala_1 == NULL || sala_2 == NULL) {
+			sala_1 = malloc(sizeof(int) * (datos_sala_1[0] / accesos));
+			sala_2 = malloc(sizeof(int) * (datos_sala_2[0] / accesos));
+			accesos *= 2;
+		}
+		accesos /= 2;
+		if(sala_1 == -1  || sala_2 == -1){
+			perror("Error al asignar memoria para las dos salas");
+			exit(1);
+		}
+		bytes_leidos = 1;
+		while (bytes_leidos > 0){
+			ssize_t bytes_leidos = read(fd1, sala_1, sizeof(int) * (datos_sala_1[0] / accesos));
+			CHECK_LEIDO(bytes_leidos);
+			ssize_t bytes_leidos2 = read(fd2, sala_2, sizeof(int) * (datos_sala_2[0] / accesos));
+			CHECK_LEIDO(bytes_leidos2);
+			for (int i = 0; i < bytes_leidos2*sizeof(int); i++) {
+				if (*(sala_1 + i) != *(sala_2 + i)) {
+					printf("Las salas no son iguales\n");
+					close(fd1);
+					close(fd2);
+					libera_sala(sala_1);
+					libera_sala(sala_2);
+					return 1;
+					exit(1);
+				}
+			}
+		}
+		return 0;
 	}
 
 }
