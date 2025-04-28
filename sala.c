@@ -110,7 +110,7 @@ int crea_sala(int capacidad) {
 int reemplaza_sala(int* asientos, int capacidad, int asientos_ocupados) {
     if (sala == NULL) return -1;
     free(sala);
-    int* sala = asientos;
+    sala = asientos;
     if (sala == NULL) return -1;
     cap_sala = capacidad;
     ocupados = asientos_ocupados;
