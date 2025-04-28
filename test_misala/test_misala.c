@@ -81,11 +81,14 @@ int crea_test_sh(char* metodo){
     
     int test_reserva(){
         // no existe
-        assert(crea_test_sh("./misala reserva -f noexiste.txt ") == 1);
-        assert(crea_test_sh("./mi_sala reserva -fo noexiste.txt -a 1 -p 1") == 1);
+        assert(crea_test_sh("./misala reserva -f noexiste.txt 1 2 3 4") == 1);
+        // no tengo permisos
+        assert(crea_test_sh("./misala reserva -f sin_permisos.txt 1 2 3 4") == 1);
         // existe
-        assert(crea_test_sh("./misala reserva -f sala_f_1.txt -a 1 -p 1") == 0);
-        assert(crea_test_sh("./misala reserva -fo sala_fo_1.txt -a 1 -p 1") == 0);
+        assert(crea_test_sh("./misala reserva -f sala_creada.txt 1 2 3 4") == 0);
+        // faltan un argumentos
+        assert(crea_test_sh("./misala reserva -f sala_creada.txt") == 1);
+
     }
 
 
