@@ -7,6 +7,8 @@
 #include <string.h>
 #include "sala.h"
 
+#define MAX_BUFFER_SIZE 10000
+
 #define ASIENTO_CORRECTO(x)\
 	if (x >= capacidad || x <= 0) {\
 		*(asientos_invalidos + n_asientos_invalidos) = x;\
@@ -25,6 +27,29 @@
  		*(asientos + n_asientos) = asiento_ocupado;\
  		n_asientos++;\
  	}
+ 	
+char* reservas_invalidas(int* reservas, int n_reservas, int personas) {
+	char* result = malloc(MAX_BUFFER_SIZE);
+	if (!result) return NULL;
+	
+	char* ptr = result;
+	int entradilla;
+	
+	if (personas < 0) entradilla = sprintf(ptr, "Identificadores inválidos: ");
+	else entradilla = sprintf(ptr, "Asientos inválidos: ");
+	
+	ptr += entradilla;
+	*ptr++ = '{';
+	
+	for (int i = 0; i < n_reservas; i++) {
+		int numero = sprintf(ptr, "%d, ", reservas[i]);
+		ptr += numero;
+	}
+	
+	*(ptr - 2) = '}';
+	*(ptr - 1) = '\0';
+	return result;
+}
 
 int main(int argc, char* argv[]) {
 
@@ -154,39 +179,47 @@ int main(int argc, char* argv[]) {
 
 	if (!strcmp(option, "anula")) {
 	
-	    int opt;
+	    int opt, fd, capacidad, n_asientos, n_asientos_invalidos;
+	    int* asientos;
+	    int* asientos_invalidos;
+	    
 		struct option longopts[] = {
 			{"asientos", required_argument, NULL, 'a'},
 			{"personas", required_argument, NULL, 'p'},
 			{0, 0, 0, 0}
 		};
-		
-		int fd = open(dir, O_RDONLY);
-		CHECK_ERROR(fd);
-		SELECT_DATOS_SALA(fd, 0);
-		int capacidad = datos_sala[0];
-		
-		if (crea_sala(capacidad) == -1) {
-			perror("No se pudo crear la sala");
-			exit(1);
-		}
-		
-		int* asientos = malloc(capacidad * sizeof(int));
-		int n_asientos = 0;
+
 		int asientos_personas = 0;
+		optind = 2;
 		
-		int* asientos_invalidos = malloc(capacidad * sizeof(int));
-		int n_asientos_invalidos = 0;
-		
-		if (asientos == NULL || asientos_invalidos == NULL) {
-			elimina_sala();
-			perror("Error en la alocación de memoria");
-			exit(1);
-		}
-		
-		while (opt = getopt_long_only(argc, argv, "f:", longopts, NULL) != -1) {
+		while ((opt = getopt_long_only(argc, argv, "f:", longopts, NULL)) != -1) {
 	        if (opt == 'f') {
 	                dir = optarg;
+	                		
+					fd = open(dir, O_RDONLY);
+					CHECK_ERROR(fd);
+					SELECT_DATOS_SALA(fd, 0);
+					capacidad = datos_sala[0];
+					
+					if (crea_sala(capacidad) == -1) {
+						perror("No se pudo crear la sala");
+						close(fd);
+						exit(1);
+					}
+					
+					asientos = malloc(capacidad * sizeof(int));
+					n_asientos = 0;
+		
+					asientos_invalidos = malloc(capacidad * sizeof(int));
+					n_asientos_invalidos = 0;
+		
+					if (asientos == NULL || asientos_invalidos == NULL) {
+						elimina_sala();
+						close(fd);
+						perror("Error en la alocación de memoria");
+						exit(1);
+					}
+					
 	                continue;
 	        }
 	        if (opt == 'a') {
@@ -230,7 +263,7 @@ int main(int argc, char* argv[]) {
 			}
 		} else {
 			for (int i = optind; i < argc; i++) {
-					PERSONA_CORRECTA(atoi(argv[optind]));
+					PERSONA_CORRECTA(atoi(argv[i]));
 			}
 		}
 		
@@ -240,6 +273,10 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 		elimina_sala();
+		if (n_asientos_invalidos > 0) {
+			perror(reservas_invalidas(asientos_invalidos, n_asientos_invalidos, asientos_personas));
+			exit(1);
+		}
 		exit(0);
 	}
 	

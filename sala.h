@@ -7,7 +7,7 @@
 # define PROCESOSPRAC2_ARS_JMGF_SALA_H
 
 # ifndef DETALLES
-# define DETALLES 1
+# define DETALLES 0
 # endif
 
 #define CHECK_LEIDO(x)\

@@ -36,10 +36,7 @@ int recupera_estado_sala(char* ruta_fichero){
 		close(fd);
 		return -1;
 	}
-<<<<<<< HEAD
-=======
 	
->>>>>>> ebb2eb369d3215b21d6bcab4b3143a301a9983ce
 	bytes_leidos = read(fd, estado_asiento, sizeof(int)* datos_sala[0]);
 	CHECK_LEIDO(bytes_leidos);
 	close(fd);
