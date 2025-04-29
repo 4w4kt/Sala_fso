@@ -57,7 +57,7 @@ int crea_test_sh(char* metodo){
         // argumentos incompletos
         assert(crea_test_sh("./misala crea -c 20") == 1);
         assert(crea_test_sh("./misala crea -f sala_f_1.txt") == 1);
-        assert(crea_test_sh("./misala crea -fo sala_fo_1.txt") == 1);ç
+        assert(crea_test_sh("./misala crea -fo sala_fo_1.txt") == 1);
 
         // no existe
         assert(crea_test_sh("./misala crea -f sala_f_1.txt -c 20") == 0);
@@ -88,7 +88,20 @@ int crea_test_sh(char* metodo){
         assert(crea_test_sh("./misala reserva -f sala_creada.txt 1 2 3 4") == 0);
         // faltan un argumentos
         assert(crea_test_sh("./misala reserva -f sala_creada.txt") == 1);
+    }
 
+    int test_anula(){
+        // no existe
+        assert(crea_test_sh("./misala anula -f noexiste.txt -asientos 1 2 3 4") == 1);
+        // no tengo permisos
+        assert(crea_test_sh("./misala anula -f sin_permisos.txt -asientos 1 2 3 4") == 1);
+        // existe
+        assert(crea_test_sh("./misala anula -f sala_creada.txt -asientos 1 2 3 4") == 0);
+        // faltan un argumentos
+        assert(crea_test_sh("./misala anula -f sala_creada.txt -asientos") == 1);
+        assert(crea_test_sh("./misala anula -f sala_creada.txt") == 1);
+        assert(crea_test_sh("./misala anula -f sala_creada.txt -a 1 2 3 4") == 1);
+        assert(crea_test_sh("./misala anula -f sala_creada.txt  1 2 3 4") == 1);
     }
 
 
