@@ -154,13 +154,11 @@ int guarda_estado_sala(char* ruta_fichero){
 	int fd = open(ruta_fichero, mode);
 	CHECK_ERROR(fd);
 	
-	int cap_sala = capacidad_sala();
 	ssize_t bytes_escritos = write(fd, &cap_sala, sizeof(int));
 	CHECK_ESCRITO(bytes_escritos);
-	int ocupados = asientos_ocupados();
 	bytes_escritos = write(fd, &ocupados, sizeof(int));
 	CHECK_ESCRITO(bytes_escritos); 
-	bytes_escritos = write(fd, get_sala(), sizeof(int) * cap_sala);
+	bytes_escritos = write(fd, sala, sizeof(int) * cap_sala);
 	CHECK_ESCRITO(bytes_escritos);
 	close(fd);
 	return 0;
@@ -174,8 +172,7 @@ int recupera_estado_sala(char* ruta_fichero){
 	
 	int* estado_asiento = calloc(datos_sala[0], sizeof(int));
 	
-	if(estado_asiento == NULL && errno == ENOMEM){
-		perror("No se ha podido reservar memoria para el estado de la sala");
+	if(estado_asiento == NULL){
 		close(fd);
 		return -1;
 	}
