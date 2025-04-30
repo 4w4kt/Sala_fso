@@ -60,15 +60,6 @@ int estado_asiento(int id_asiento){
     return *(sala + id_asiento - 1);
 }
 
-int set_asiento(int id_asiento, int id_persona){
-    if (id_asiento > cap_sala || id_asiento <= 0 || id_persona < 0) return -1;
-    
-    if(*(sala + id_asiento - 1) == 0 && id_persona > 0) ocupados++;
-    else if(*(sala + id_asiento - 1) != 0 && id_persona == 0) ocupados--;
-        
-    *(sala + id_asiento - 1) = id_persona;
-    return 0;
-}
 
 /**
  * Devuelve el número de asientos libres.
@@ -115,20 +106,6 @@ int crea_sala(int capacidad) {
     return capacidad;
 }
 
-int reemplaza_sala(int* asientos, int capacidad, int asientos_ocupados) {
-    if (sala == NULL) return -1;
-    free(sala);
-    sala = asientos;
-    if (sala == NULL) return -1;
-    cap_sala = capacidad;
-    ocupados = asientos_ocupados;
-    return capacidad;
-}
-
-int* get_sala(){
-    return sala;
-}
-
 
 /**
  * Libera la memoria asociada a la sala.
@@ -146,9 +123,22 @@ int elimina_sala() {
 
 
 
+/* Adición de la práctica 3 */
 
 
-//adicion de la practica 3
+/**
+ * Libera la memoria asociada a la sala.
+ * @return 0 si se elimina correctamente, -1 en caso de error
+ */
+int set_asiento(int id_asiento, int id_persona){
+    if (id_asiento > cap_sala || id_asiento <= 0 || id_persona < 0) return -1;
+    
+    if(*(sala + id_asiento - 1) == 0 && id_persona > 0) ocupados++;
+    else if(*(sala + id_asiento - 1) != 0 && id_persona == 0) ocupados--;
+        
+    *(sala + id_asiento - 1) = id_persona;
+    return 0;
+}
 
 
 int guarda_estado_sala(char* ruta_fichero){
@@ -182,21 +172,27 @@ int recupera_estado_sala(char* ruta_fichero){
 
 int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
 	if (sala == NULL) return -1;
+	
+	for (int i = 0; i < num_asientos; i++) {
+		printf("FRUSTRADA TU PUTA MADRE %d\n", id_asientos[i]);
+	}
+	
 	int fd = open(ruta_fichero, O_RDWR);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);
 
-	int estado_asiento_antiguo;
+	int estado_asiento_antiguo, estado;
 	int asientos_ocupados = datos_sala[1];
+	ssize_t bytes_escritos;
 
 	for(int i = 0; i < num_asientos; i++){
 		lseek(fd, sizeof(int)* (id_asientos[i] + 1), SEEK_SET);
-		ssize_t bytes_leidos = read(fd, &estado_asiento_antiguo, sizeof(int));
+		bytes_leidos = read(fd, &estado_asiento_antiguo, sizeof(int));
 		CHECK_LEIDO(bytes_leidos);
 
 		lseek(fd, sizeof(int)* (id_asientos[i] + 1), SEEK_SET);
-		int estado = estado_asiento(id_asientos[i]);			//mejorable con &(sala + id_asientos - 1) ??
-		int bytes_escritos = write(fd, &estado, sizeof(int));
+		estado = *(sala + id_asientos[i] - 1);
+		bytes_escritos = write(fd, &estado, sizeof(int));
 		CHECK_ESCRITO(bytes_escritos);
 		if(estado_asiento_antiguo == 0 && estado != 0){
 			asientos_ocupados++;
@@ -206,8 +202,9 @@ int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id
 			asientos_ocupados--;
 		}
 	}
-	lseek(fd, sizeof(int), SEEK_SET); //cambiamos el valor de los asientos ocupados
-	ssize_t bytes_escritos = write(fd, &asientos_ocupados, sizeof(int));
+	
+	lseek(fd, sizeof(int), SEEK_SET);
+	bytes_escritos = write(fd, &asientos_ocupados, sizeof(int));
 	CHECK_ESCRITO(bytes_escritos);
 	close(fd);
 	return 0;

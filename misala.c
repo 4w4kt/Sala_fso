@@ -86,7 +86,6 @@ int main(int argc, char* argv[]) {
 			
 		}
 
-		
 		if (override) {
 			if (access(dir, W_OK) != 0 && errno == EACCES) {
 				perror("No tiene permisos de escritura para la ruta indicada");
@@ -245,6 +244,9 @@ int main(int argc, char* argv[]) {
 	        		PERSONA_CORRECTA(atoi(optarg));
 	        		continue;
 	        }
+	        if (opt == '?') {
+	        	continue;
+	        }
 		}
 		
 		if (asientos_personas == 0) {
@@ -261,10 +263,14 @@ int main(int argc, char* argv[]) {
 				perror("Error al recuperar el estado de la sala");
 				exit(1);
 			}
+			for (int i = 0; i < n_asientos; i++) {
+				libera_asiento(*(asientos + i));
+			}
 		} else {
 			for (int i = optind; i < argc; i++) {
 					PERSONA_CORRECTA(atoi(argv[i]));
 			}
+			
 		}
 		
 		if (guarda_estado_parcial_sala(dir, n_asientos, asientos) == -1) {
@@ -303,22 +309,6 @@ int main(int argc, char* argv[]) {
 			close(fd);
 			exit(0);
 		}
-			
-		// falta comprobar el caso de que no se pueda cargar la sala
-		/*
-		accesos /= 2;
-		printf("la capacidad de la sala es: %d y tiene %d asientos ocupados\n{ ", datos_sala[0], datos_sala[1]);
-		int bytes_leidos = 1;
-		while (bytes_leidos > 0){
-			ssize_t bytes_leidos = read(fd, sala, sizeof(int) * (datos_sala_1[0] / accesos));
-			CHECK_LEIDO(bytes_leidos);
-			for (int i = 0; i < bytes_leidos/sizeof(int); i++) {
-					printf("%d, ", *(sala + i));
-				}
-			}
-			printf("}\n");
-		close(fd);
-		*/
 	}
 
 
