@@ -440,7 +440,13 @@ void ejecuta_tests ()
     test_2asientos();
     test_completo1();
     test_completo2();
+    test_completo_practica_3();
 }
+
+void test_completo_practica_3() {
+    INICIO_TEST_NOMBRE("Completo 3");
+    DebeSerCierto(crea_sala(10) == 10);
+    DebeSerCierto(gruada_estado_sala()
 
 void main()
 {
