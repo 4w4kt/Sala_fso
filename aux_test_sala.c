@@ -7,7 +7,7 @@
 
 /**
  * Muestra el estado de todos y cada uno de los asientos
- * y una informaci�n resumen de la sala.
+ * y una información resumen de la sala.
  */
 int estado_sala(char* titulo) {
     if (capacidad_sala() == -1) {
@@ -30,7 +30,7 @@ int estado_sala(char* titulo) {
 /**
  * Libera un asiento ocupado por la persona pasado por parametro
  * @param id_persona identificador de la persona que va a liberar el asiento
- * @return n�mero del asiento liberado, -1 en caso contrario
+ * @return número del asiento liberado, -1 en caso contrario
  */
 int levantarse(int id_persona) {
     if (id_persona <= 0 || asientos_ocupados() == capacidad_sala()) {
@@ -39,10 +39,10 @@ int levantarse(int id_persona) {
     }
     for (int i = 1; i <= capacidad_sala(); i++) {
         if (estado_asiento(i) == id_persona) {
-            int result = libera_asiento(i);
+            libera_asiento(i);
 
             if (DETALLES) printf("%d se ha levantado del asiento %d\n", id_persona, i);
-            return result;
+            return i;
         }
     }
     if (DETALLES) printf("No se ha encontrado %d en esta sala\n", id_persona);
@@ -50,9 +50,9 @@ int levantarse(int id_persona) {
 }
 
 /**
- * encuentra un asiento para la persona pasada por par�metro
+ * Encuentra un asiento para la persona pasada por parámetro
  * @param id_persona identificador de la persona que va a ocupar el asiento
- * @return el n�mero de asiento donde se puede sentar, -1 en si no es posible asignarle un asiento
+ * @return el número de asiento donde se puede sentar, -1 en si no es posible asignarle un asiento
  */
 int sentarse(int id_persona) {
 
@@ -74,7 +74,7 @@ int sentarse(int id_persona) {
  * Reserva un asiento a cada persona pasada
  * @param n_personas cantidad de personas en la lista
  * @param lista_id lista de personas que desean un asiento
- * @return el n�mero de personas si se a encontrado asiento para todas, -1 en caso contrario
+ * @return el número de personas si se a encontrado asiento para todas, -1 en caso contrario
  */
 
 int reserva_multiple(int n_personas, int* lista_id) {
