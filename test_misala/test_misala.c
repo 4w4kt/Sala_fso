@@ -91,17 +91,89 @@ void test_practia_3(){
     for(int i = 11; i <= 20; i++){
         DEBESERCIERTO(estado_asiento(i) == 0);
     }
-    if(DETALLES) printf("Vamos a reservar los siguientes 10 asientos \n");
-
-
-
-
-
-    close(fd);
+    if(DETALLES) printf("Vamos a reservar los siguientes 10 asientos co ids 2\n");
+    for(int i = 11; i <= 20; i++){
+        reserva_asiento(2);
+    }
+    if(DETALLES)printf("vamos a guardar los pirmeros 10 asientos en sala_2.txt que estaba vacía");
+    int id_asientos1[10];
+    for (int i =1; i <= 10; i++){
+        id_asientos1[i] = i;
+    }
+    if(DETALLES){
+        estado_sala("Estado de la sala actual");
+        printf("Ahora vamos a guardar los el estado de los 10 ultimos asietos en sala_3.txt\n");
+        printf("y vamos a guardar toda la sala en sala_4.txt\n");
+        printf("de tal forma que sala_1.txt y sala_2.txt tiene que tener los primeros 10 asientos reservados por el id 1\n");
+        printf("sala_3.txt tiene los ultimos 10 asientos reservados por el id 2\n");
+        printf("y sala_4.txt tiene la sala actual\n");
+        }
+    guardar_estado_parcial_sala(sala_1.txt, 10, id_asientos1);
+    guarda_estado_sala(sala_4.txt);
+    int id_asientos2[10];
+    for (int i = 10; i <= 20; i++){
+        id_asientos[i] = i;
+    }
+    guarda_estado_parcial_sala(sala_3.txt, 10, id_asientos2);
+    if(DETALLES) printf("Ahora vamos a comprobar que la sala_1.txt tiene los primeros 10 asientos reservados por el id 1\n");
+    recupera_estado_sala(sala_1.txt);
+    DEBESERCIERTO(capacidad_sala() == 20);
+    DEBESERCIERTO(asientos_libres() == 10);
+    DEBESERCIERTO(asientos_ocupados() == 10);
+    for(int i = 1; i <= 10; i++){
+        DEBESERCIERTO(estado_asiento(i) == 1);
+    }
+    for(int i = 11; i <= 20; i++){
+        DEBESERCIERTO(estado_asiento(i) == 0);
+    }
+    if(DETALLES){
+        estado_sala("sala_1.txt");
+        printf("Ahora vamos a comprobar que la sala_2.txt tiene los pr 10 asientos reservados por el id 2\n");
+    }
+    recupera_estado_sala(sala_2.txt);
+    DEBESERCIERTO(capacidad_sala() == 20);
+    DEBESERCIERTO(asientos_libres() == 10);
+    DEBESERCIERTO(asientos_ocupados() == 10);
+    for(int i = 1; i <= 10; i++){
+        DEBESERCIERTO(estado_asiento(i) == 1);
+    }
+    for(int i = 11; i <= 20; i++){
+        DEBESERCIERTO(estado_asiento(i) == 0);
+    }
+    if(DETALLES) {
+        estado_sala("sala_2.txt");
+        printf("Ahora vamos a comprobar que la sala_3.txt tiene los ultimos 10 asientos reservados por el id 2\n");
+    }
+    crea_sala(20);
+    recupera_estado_sala(sala_3.txt);
+    DEBESERCIERTO(capacidad_sala() == 20);
+    DEBESERCIERTO(asientos_libres() == 10);
+    DEBESERCIERTO(asientos_ocupados() == 10);
+    for(int i = 1; i <= 10; i++){
+        DEBESERCIERTO(estado_asiento(i) == 0);
+    }
+    for(int i = 11; i <= 20; i++){
+        DEBESERCIERTO(estado_asiento(i) == 2);
+    }
+    if(DETALLES){
+        estado_sala("sala3.txt");
+        printf("Ahora vamos a comprobar que la sala_4.txt tiene la sala actual\n");
+    }
+    recupera_estado_sala(sala_4.txt);
+    DEBESERCIERTO(capacidad_sala() == 20);
+    DEBESERCIERTO(asientos_libres() == 0);
+    DEBESERCIERTO(asientos_ocupados() == 20);
+    for(int i = 1; i <= 10; i++){
+        DEBESERCIERTO(estado_asiento(i) == 1);
+    }
+    for(int i = 11; i <= 20; i++){
+        DEBESERCIERTO(estado_asiento(i) == 2);
+    }
+    if(DETALLES) estado_sala("sala_4.txt");
 }
 
 
-
+// que pasa cuando recuperas una sala con asienntos no guardados...
 
 
 
