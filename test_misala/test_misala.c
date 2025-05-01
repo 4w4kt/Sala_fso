@@ -174,7 +174,21 @@ void test_practia_3(){
 
 
 // que pasa cuando recuperas una sala con asienntos no guardados...
+test_casos_peculiares_2(){
+    crea_sala(20);
+    int ids[10];
+    for(int i = 1; i <= 11; i++){
+        ids[i-1] = i;
+    }
+    DEBESERCIERTO(recupera_estado_parcial_sala(sinpermiso.txt, 10, ids), -1);
+    DEBESERCIERTO(recupera_estado_parcial_sala(noexiste.txt, 10, ids), -1);
+    DEBESERCIERTO(recupera_estado_parcial_sala(sala_vacia.txt, 10, ids), -1);
 
+    if(DETALLES){
+        printf("Hemos tratado de abrir recuperar salas en ficheros que no existen\n");
+        printf("ficheros vacios \n");
+    }
+}
 
 
 
