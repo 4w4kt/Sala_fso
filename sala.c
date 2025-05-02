@@ -220,6 +220,7 @@ int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* 
 		lseek(fd, sizeof(int)* id_asientos[i] + 1, SEEK_SET);
 		ssize_t bytes_leidos = read(fd, &estado_asiento_antiguo, sizeof(int));
 		CHECK_LEIDO(bytes_leidos);
+		if(bytes_leidos == 0) continue;
 		set_asiento(id_asientos[i], estado_asiento_antiguo);
 	}
 	lseek(fd, sizeof(int), SEEK_SET);

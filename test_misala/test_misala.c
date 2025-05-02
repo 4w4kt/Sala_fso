@@ -174,8 +174,13 @@ void test_practia_3(){
 
 
 // que pasa cuando recuperas una sala con asienntos no guardados...
-test_casos_peculiares_2(){
+test_recupera_sala_parcial(){
     crea_sala(20);
+    int ids_reserva[20];
+    for(int i = 0; i < 20; i++){
+        ids_reserva[i] = 98;
+    }
+    reserva_multiple(20, ids_reserva)
     int ids[10];
     for(int i = 1; i <= 11; i++){
         ids[i-1] = i;
@@ -186,8 +191,52 @@ test_casos_peculiares_2(){
 
     if(DETALLES){
         printf("Hemos tratado de abrir recuperar salas en ficheros que no existen\n");
-        printf("ficheros vacios \n");
+        printf("ficheros sin permisos y ficheros vacíos \n");
+        printf("la sala la habiamos iniciado con todos los asientos con id 98\n");
+        printf("y ahora vamos a comprobar que no se han modificado\n");
+        estado_sala("sala_recuperada.txt");
     }
+
+    for(int i = 1; i <= 20; i++){
+        DEBESERCIERTO(estado_asiento(i) == 98);
+    }
+    DEBESERCIERTO(capacidad_sala() == 20);
+    DEBESERCIERTO(asientos_libres() == 0);
+    DEBESERCIERTO(asientos_ocupados() == 20);
+    if(DETALLES){
+        printf("Ahora vamos a guardar la sala actual en sala_recuperada.txt\n");
+        printf("y vamos a recuperar la sala actual desde el fichero sala_98.txt\n");
+        printf("y vamos a comprobar que se ha recuperado correctamente\n");
+    }
+    guarda_estado_sala(sala_98.txt);
+    crea_sala(20);
+    if(DETALLES) estado_sala("Anstes de recuperar la sala");
+    int ids_pares [10];
+    for(int i = 0; i < 10; i++){
+        ids_pares[i] = i*2;
+    }
+    recupera_estado_parcial_sala(sala_98.txt, 10, ids_pares);
+    if(DETALLES) estado_sala("Despues de recuperar los asientos pares");
+    DEBESERCIERTO(capacidad_sala() == 20);
+    DEBESERCIERTO(asientos_libres() == 10);
+    DEBESERCIERTO(asientos_ocupados() == 10);   
+    for(int i = 1; i <= 10; i++){
+        DEBESERCIERTO(estado_asiento(ids_pares[i]) == 98);
+    }
+    if(DETALLES){
+        printf("Ahora vamos a tratar de recuperar la  sala pasando parámetros incorrectos\n");
+    }
+    ids_reserva[20];
+    for(int i = 0; i < 20; i++){
+        ids_reserva[i] = 98;
+    }
+    DEBESERCIERTO(recupera_estado_parcial_sala(sala_98.txt, 10, ids_reserva), -1);
+    int ids_impares[10];
+    for(int i = 0; i < 10; i++){
+        ids_impares[i] = i*2 + 1;
+    }
+    DEBESERCIERTO(recupera_estado_parcial_sala(sala_98.txt, -10, ids_impares), -1);
+
 }
 
 
