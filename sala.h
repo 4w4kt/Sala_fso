@@ -10,6 +10,15 @@
 # define DETALLES 0
 # endif
 
+
+#define DebeSerCierto(x)	assert(x)
+#define DebeSerFalso(x)		assert(!(x))
+
+#define INICIO_TEST_NOMBRE(nombre)              if (DETALLES) INICIO_TEST(nombre)
+#define ESTADO(titulo)                          if (DETALLES) estado_sala(titulo)
+#define CHECK_LIBERA(nCheck, ids, results)      for (int i = 0; i < nCheck; i++) DebeSerCierto(libera_asiento(ids[i]) == results[i]);
+
+
 #define CHECK_LEIDO(x)\
     if ((x) == -1) {\
         perror("Error en la lectura");\

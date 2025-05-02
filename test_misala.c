@@ -15,55 +15,37 @@
     }
 
 
-int crea_test_sh(char* metodo){
-    pid_t pid_creado = fork();
-    if (pid_creado == -1) {
-        perror("Se produjo un error al crear la sucursal.");
-        exit(1);
+int setup(){
+    int fd = open(sala_vacia.txt, O_RDWR|O_CREAT|O_TRUNC);
+    CHECK_ERROR (fd);
+    close(fd);
+    int fd = open(sala_vacia_copia.txt, O_RDWR|O_CREAT|O_TRUNC);
+    CHECK_ERROR (fd);
+    close(fd);
+    fd = open(sala_creada.txt, O_RDWR|O_CREAT|O_TRUNC);
+    CHECK_ERROR (fd);
+    crea_sala(20);
+    int* ids [20];
+    for(int i = 1; i <= 20; i++){
+        ids[i] = i*3;
     }
-    if (pid_creado == 0) {
-        int ret = execlp("sh", "sh", "-c", metodo, NULL);
-        if (ret == -1) {
-            perror("No se pudo crear una nueva sala.");
-            exit(1);
-        }
+    reserva_multiple(20, ids);
+    levantarse_asiento(3);
+    levantarse_asiento(9);
+    guarda_estado_sala(sala_creada.txt);
+    close(fd);
+    return 0;
 
+    fd = open("sin_permisos.txt", O_CREAT | O_WRONLY | O_TRUNC, 0000);
+    if (fd == -1) {
+        perror("Error creando el archivo");
+        return 1;
     }
-    int status;
-    pid_t pidhijo = wait(&status);
-    return WEXITSTATUS(status);
-    }
+    close(fd);    
+}
 
-    int setup(){
-        int fd = open(sala_vacia.txt, O_RDWR|O_CREAT|O_TRUNC);
-        CHECK_ERROR (fd);
-        close(fd);
-        int fd = open(sala_vacia_copia.txt, O_RDWR|O_CREAT|O_TRUNC);
-        CHECK_ERROR (fd);
-        close(fd);
-        fd = open(sala_creada.txt, O_RDWR|O_CREAT|O_TRUNC);
-        CHECK_ERROR (fd);
-        crea_sala(20);
-        int* ids [20];
-        for(int i = 1; i <= 20; i++){
-            ids[i] = i*3;
-        }
-        reserva_multiple(20, ids);
-        levantarse_asiento(3);
-        levantarse_asiento(9);
-        guarda_estado_sala(sala_creada.txt);
-        close(fd);
-        return 0;
 
-        fd = open("sin_permisos.txt", O_CREAT | O_WRONLY | O_TRUNC, 0000);
-        if (fd == -1) {
-            perror("Error creando el archivo");
-            return 1;
-        }
-        close(fd);    
-    }
-
-void test_practia_3(){
+void test_general(){
     if(DETALLES){
         printf("Vamos a testear las funciones de la practica 3\n");
         printf("Vamos a guardar una sala de 20 elementos en sala.c\n");
