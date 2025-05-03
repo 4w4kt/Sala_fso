@@ -10,6 +10,7 @@
 
 
 #include "sala.h"
+#include "macros.h"
 #include <stdlib.h>
 
 

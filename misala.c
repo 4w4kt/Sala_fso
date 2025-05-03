@@ -6,27 +6,10 @@
 #include <errno.h>
 #include <string.h>
 #include "sala.h"
+#include "macros.h"
 
 #define MAX_BUFFER_SIZE 10000
 
-#define ASIENTO_CORRECTO(x)\
-	if (x >= capacidad || x <= 0) {\
-		*(asientos_invalidos + n_asientos_invalidos) = x;\
-		 n_asientos_invalidos++;\
-	} else {\
-		*(asientos + n_asientos) = x;\
-		n_asientos++;\
-	}
-			
-#define PERSONA_CORRECTA(x)\
- 	int asiento_ocupado = levantarse(x);\
- 	if (asiento_ocupado == -1) {\
- 		*(asientos_invalidos + n_asientos_invalidos) = x;\
- 		n_asientos_invalidos++;\
- 	} else {\
- 		*(asientos + n_asientos) = asiento_ocupado;\
- 		n_asientos++;\
- 	}
  	
 char* reservas_invalidas(int* reservas, int n_reservas, int personas) {
 	char* result = malloc(MAX_BUFFER_SIZE);
@@ -53,18 +36,15 @@ char* reservas_invalidas(int* reservas, int n_reservas, int personas) {
 
 int main(int argc, char* argv[]) {
 
-	if (argc < 4) {
-		perror("Número de argumentos incorrecto");
-		exit(1);
-	}
-
 	char* option = argv[1];
 	char* dir;
 	
 	if (!strcmp(option, "crea")) {
 		int opt;
 		int override = 0;
-		int cap;
+		int cap = 0;
+		
+		CHECK_NARGUMENTOS(6, 1);
 		
 		while ((opt = getopt(argc, argv, "f:c:")) != -1) {
 			
@@ -96,20 +76,15 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 
-		if (crea_sala(cap) == -1) {
-			perror("No se pudo crear la sala");
-			exit(1);
-		}
-		if (guarda_estado_sala(dir) == -1) {
-			elimina_sala();
-			perror("No se pudo guardar el estado de la sala en la ruta indicada");
-			exit(1);
-		}
+		CREA_SALA(cap, 0);
+		GUARDA(1, 0);
 		elimina_sala();
 		exit(0);
 	}
 	
 	if (!strcmp(option, "reserva")) {
+	
+		CHECK_NARGUMENTOS(6, 1);
 		
 		int opt = getopt(argc, argv, "f:");
 		if (opt == -1) {
@@ -123,10 +98,7 @@ int main(int argc, char* argv[]) {
 		CHECK_ERROR(fd);
 		SELECT_DATOS_SALA(fd, 0);
 		
-		if (crea_sala(datos_sala[0]) == -1) {
-			perror("No se pudo crear la sala");
-			exit(1);
-		}
+		CREA_SALA(datos_sala[0], 1);
 	
 		int max_asientos = datos_sala[0] - datos_sala[1];
 		int* asientos = malloc(max_asientos * sizeof(int));
@@ -152,12 +124,7 @@ int main(int argc, char* argv[]) {
 			*(asientos + n_asientos - 1) = atoi(argv[i]);
 		}
 		
-		if (recupera_estado_sala(dir) == -1) {
-			elimina_sala();
-			perror("No se pudo recuperar el estado de la sala");
-			close(fd);
-			exit(1);
-		}
+		RECUPERA(1, 1);
 		
 		if (reserva_multiple(n_asientos, asientos) == -1) {
 			elimina_sala();
@@ -165,12 +132,7 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 		
-		if (guarda_estado_sala(dir) == -1) {
-			elimina_sala();
-			perror("No se pudo guardar la sala actualizada");
-			close(fd);
-			exit(1);
-		}
+		GUARDA(1, 1);
 		
 		elimina_sala();
 		exit(0);
@@ -197,14 +159,9 @@ int main(int argc, char* argv[]) {
 	                		
 					fd = open(dir, O_RDONLY);
 					CHECK_ERROR(fd);
-					SELECT_DATOS_SALA(fd, 0);
-					capacidad = datos_sala[0];
 					
-					if (crea_sala(capacidad) == -1) {
-						perror("No se pudo crear la sala");
-						close(fd);
-						exit(1);
-					}
+					SELECT_DATOS_SALA(fd, 0);
+					CREA_SALA(datos_sala[0], 1);
 					
 					asientos = malloc(capacidad * sizeof(int));
 					n_asientos = 0;
@@ -287,8 +244,7 @@ int main(int argc, char* argv[]) {
 	}
 	
 	if (!strcmp(option, "estado")) {
-		int n_asientos;
-		
+	
 		int opt = getopt(argc, argv, "f:");
 		if (opt == -1) {
 			perror("Lectura de ruta incorrecta");
@@ -298,24 +254,23 @@ int main(int argc, char* argv[]) {
 		dir = optarg;
 		int fd = open(dir, O_RDONLY);
 		CHECK_ERROR(fd);
-		SELECT_DATOS_SALA(fd, 0);
-		int accesos = 1;
-		while (crea_sala(datos_sala[0] / accesos) == -1) accesos *= 2;
 		
-		if (accesos == 1) {
-			recupera_estado_sala(dir);
-			estado_sala("========= Estado de la sala =========");
-			elimina_sala();
-			close(fd);
-			exit(0);
-		}
+		SELECT_DATOS_SALA(fd, 0);
+		CREA_SALA(datos_sala[0], 1);
+		
+		
+		RECUPERA(1, 1);
+		estado_sala("========= Estado de la sala =========");
+		elimina_sala();
+		close(fd);
+		exit(0);
 	}
 
 
 	if(!strcmp(option, "compara")) {
 		if(!strcmp(argv[2], argv[3])){
-			puts("son iguales");
-			return 0;
+			puts("Las salas son iguales.");
+			exit(0);
 		}
 		
 		int fd1 = open(argv[2], O_RDONLY);
@@ -377,8 +332,8 @@ int main(int argc, char* argv[]) {
 				}
 			}
 		}
-		puts("son iguales");
-		return 0;
+		puts("Las salas son iguales.");
+		exit(0);
 	}
 
 }

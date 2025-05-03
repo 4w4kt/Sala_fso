@@ -10,44 +10,6 @@
 # define DETALLES 0
 # endif
 
-
-#define DebeSerCierto(x)	assert(x)
-#define DebeSerFalso(x)		assert(!(x))
-
-#define INICIO_TEST_NOMBRE(nombre)              if (DETALLES) INICIO_TEST(nombre)
-#define ESTADO(titulo)                          if (DETALLES) estado_sala(titulo)
-#define CHECK_LIBERA(nCheck, ids, results)      for (int i = 0; i < nCheck; i++) DebeSerCierto(libera_asiento(ids[i]) == results[i]);
-
-
-#define CHECK_LEIDO(x)\
-    if ((x) == -1) {\
-        perror("Error en la lectura");\
-		close(x);\
-        return -1;\
-    }
-
-#define CHECK_ERROR(x)\
-	   if ((x) == -1) {            \
-	   perror("Error en la apertura"); \
-	   return -1;              \
-	}
-
-#define CHECK_ESCRITO(x)         \
-	   if ((x) == -1) {            \
-	   perror("Error en la escritura del archivo");		\
-		close(x);			\
-		return -1;			\
-	}
-
-#define SELECT_DATOS_SALA(fd, control) \
-	int datos_sala [2];								\
-	ssize_t bytes_leidos = read(fd, &datos_sala, sizeof(int)*2);			\
-	CHECK_LEIDO(bytes_leidos);                    									\
-	if(control && capacidad_sala() != datos_sala[0]){							\
-		perror("La sala creada tiene una capacidad distinta a la que quiere restaurar");		\
-        close(fd);                                              \
-		return -1;				\
-	}
 /// Clase sala.c
 
 extern int reserva_asiento(int id_persona);
