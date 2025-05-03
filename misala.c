@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
 		int fd = open(dir, O_RDONLY);
 		CHECK_ERROR(fd);
 		SELECT_DATOS_SALA(fd, 0);
-		
+		 
 		CREA_SALA(datos_sala[0], 1);
 	
 		int max_asientos = datos_sala[0] - datos_sala[1];
