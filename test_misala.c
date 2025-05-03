@@ -13,6 +13,7 @@
     for(int i = 1; i <= x; i++){\
         DEBESERCIERTO(estado_asiento(i) == 0);\
     }
+#define REMOVE(x) if(remove(x) != 0) perror("Error al eliminar el archivo");
 
 
 char fichero_vacio[] = "./test_misala/fichero_vacio.txt";
@@ -26,16 +27,25 @@ char sala_4[] = "./test_misala/sala_4.txt";
 char sala_97[] = "./test_misala/sala_97.txt";
 char sala_37[] = "./test_misala/sala_37.txt";
 
+
+int ids_completos[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+int ids_primeros[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+int ids_ultimos[] = {20, 19, 18, 17, 16, 15, 14, 13, 12, 11};
+int ids_pares[] = {2, 2, 2, 4, 6, 8, 14, 16, 18,  10, 12, 20};
+int ids_impares[] = {1, 1, 3, 3, 9, 11, 13, 5, 7 15, 17, 19};
+int ids_5[] = {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100};
+
+
 int setup(){
     int fd = open(fichero_vacio, O_RDWR|O_CREAT|O_TRUNC);
     CHECK_ERROR (fd);
     close(fd);
     crea_sala(20);
-    int ids [] ={5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100};
-    reserva_multiple(20, ids);
+    reserva_multiple(20, ids_5);
     levantarse_asiento(3);
     levantarse_asiento(9);
     guarda_estado_sala(sala_creada);
+    guarda_estado_sala();
     return 0;
 
     fd = open(sin_permisos, O_CREAT | O_WRONLY | O_TRUNC, 0000);
@@ -66,8 +76,7 @@ void test_general(){
     if(DETALLES) printf("Vamos a cargar la sala de sala_2.txt\n");
     recupera_estado_sala(sala_2);
     DEBESERCIERTO(capacidad_sala() == 20);
-    DEBESERCIERTO(asientos_libres() == 10);
-    DEBESERCIERTO(asientos_ocupados() == 10);
+    DEBESERCIERTO(asientos_libres() == asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++) DEBESERCIERTO(estado_asiento(i) == 1);
     for(int i = 11; i <= 20; i++) DEBESERCIERTO(estado_asiento(i) == 0);
 
@@ -75,8 +84,7 @@ void test_general(){
     for(int i = 11; i <= 20; i++) reserva_asiento(2);
     
     if(DETALLES)printf("vamos a guardar los pirmeros 10 asientos en sala_1.txt que estaba vacía");
-    int id_asientos1[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    guardar_estado_parcial_sala(sala_1, 10, id_asientos1);
+    guardar_estado_parcial_sala(sala_1, 10, ids);
     if(DETALLES){
         estado_sala("Estado de la sala actual");
         printf("Ahora vamos a guardar los el estado de los 10 ultimos asietos en sala_3.txt\n");
@@ -86,13 +94,11 @@ void test_general(){
         printf("y sala_4.txt tiene la sala actual\n");
         }
     guarda_estado_sala(sala_4);
-    int id_asientos2[] = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-    guarda_estado_parcial_sala(sala_3, 10, id_asientos2);
+    guarda_estado_parcial_sala(sala_3, 10, ids_ultimos);
     if(DETALLES) printf("Ahora vamos a comprobar que la sala_1.txt tiene los primeros 10 asientos reservados por el id 1\n");
     recupera_estado_sala(sala_1);
     DEBESERCIERTO(capacidad_sala() == 20);
-    DEBESERCIERTO(asientos_libres() == 10);
-    DEBESERCIERTO(asientos_ocupados() == 10);
+    DEBESERCIERTO(asientos_libres() == asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++) DEBESERCIERTO(estado_asiento(i) == 1);
     for(int i = 11; i <= 20; i++) DEBESERCIERTO(estado_asiento(i) == 0);
     if(DETALLES){
@@ -101,8 +107,7 @@ void test_general(){
     }
     recupera_estado_sala(sala_2);
     DEBESERCIERTO(capacidad_sala() == 20);
-    DEBESERCIERTO(asientos_libres() == 10);
-    DEBESERCIERTO(asientos_ocupados() == 10);
+    DEBESERCIERTO(asientos_libres() == asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++) DEBESERCIERTO(estado_asiento(i) == 1);
     for(int i = 11; i <= 20; i++) DEBESERCIERTO(estado_asiento(i) == 0);
     if(DETALLES) {
@@ -133,11 +138,12 @@ test_recupera_sala_parcial(){
     crea_sala(20);
     int ids_reserva[] = {97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116};
     reserva_multiple(20, ids_reserva);
-    int ids[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-    DEBESERCIERTO(recupera_estado_parcial_sala(sin_permiso, 10, ids)== -1);
-    DEBESERCIERTO(recupera_estado_parcial_sala(no_existe, 10, ids) == -1);
-    DEBESERCIERTO(recupera_estado_parcial_sala(sala_vacia, 10, ids) == -1);
+    DEBESERCIERTO(recupera_estado_parcial_sala(sin_permiso, 10, ids_primeros)== -1);
+    DEBESERCIERTO(recupera_estado_parcial_sala(no_existe, 10, ids_primeros) == -1);
+    REMOVE(no_existe);
+    
+    DEBESERCIERTO(recupera_estado_parcial_sala(sala_vacia, 10, ids_primeros) == -1);
 
     if(DETALLES){
         printf("Hemos tratado de abrir recuperar salas en ficheros que no existen\n");
@@ -158,26 +164,22 @@ test_recupera_sala_parcial(){
     guarda_estado_sala(sala_97);
     crea_sala(20);
     if(DETALLES) estado_sala("Antes de recuperar la sala");
-    int ids_pares [] = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20};
-    
-    recupera_estado_parcial_sala(sala_97, 10, ids_pares);
+
+    recupera_estado_parcial_sala(sala_97, 12, ids_pares);
     if(DETALLES) estado_sala("Después de recuperar los asientos pares");
     DEBESERCIERTO(capacidad_sala() == 20);
     DEBESERCIERTO(asientos_libres() == asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++){
-        DEBESERCIERTO(estado_asiento(ids_pares[i]) == ids_pares[i] + 98);
+        DEBESERCIERTO(estado_asiento(i*2) == i*2 + 98);
     }
-    if(DETALLES){
-        printf("Ahora vamos a tratar de recuperar la  sala con argumentos incurrectos\n");
-    }
+    if(DETALLES) printf("Ahora vamos a tratar de recuperar la  sala con argumentos incurrectos\n");
     ids_reserva[] = {30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49};
     recupera_estado_parcial_sala(sala_97, 10, ids_reserva);
-    int ids_impares[10] = {3, 5, 7, 9, 11, 13, 19, 17, 19, 1};
     DEBESERCIERTO(recupera_estado_parcial_sala(sala_97, -10, ids_impares) == -1);
     if(DETALLES){
         printf("Ahora vamos a recuperar los asientos impares, es decir lo que queda para recuperar la sala completa\n");
     }
-    recupera_estado_parcial_sala(sala_97, 10, ids_impares);
+    recupera_estado_parcial_sala(sala_97, 12, ids_impares);
     if(DETALLES) estado_sala("Despues de recuperar los asientos impares");
     DEBESERCIERTO(capacidad_sala() == asientos_ocupados() == 20);
     DEBESERCIERTO(asientos_libres() == 0);
@@ -186,7 +188,7 @@ test_recupera_sala_parcial(){
     if(DETALLES) estado_sala("ahora vamos a tratar de recuperar asientos con una sala de capacidad errónea");
     crea_sala(10)
     DEBESERCIERTO(recupera_estado_parcial_sala(sala_97, 10, ids) == -1);
-    liberar_sala();    
+    liberar_sala();
 }
 
 void test_guarda_sala(){
@@ -195,7 +197,8 @@ void test_guarda_sala(){
         printf("comprobamos que no se puede guardar salas que no existen\n");
         printf("ni salas en ficheros que no existen o no tenemos permisos\n");
     }
-    DEBESERCIERTO(guardar_sala(no_existe) == -1);
+    DEBESERCIERTO(guardar_sala(no_existe) == 0);
+    REMOVE(no_existe);
     DEBESERCIERTO(guardar_sala(sin_permiso) == -1);    
     
     crear_sala(20);
@@ -209,9 +212,7 @@ void test_guarda_sala(){
     crea_sala(10);
     DEBESERCIERTO(guardar_sala("sala_vacia_20.txt") == -1);
     if(DETALLES) printf("Ahora vamos intentar a guardar una sala llena de 10 asientos en sala_llena_10.txt\n");
-    for(int i = 1; i <= 10; i++){
-        reserva_asiento(i*3);
-    }
+    for(int i = 1; i <= 10; i++) reserva_asiento(i*3);
     DEBESERCIERTO(guardar_sala("sala_llena_10.txt") == 0);
     if(DETALLES) estado_sala("sala_llena_10.txt");
     crea_sala(10);
@@ -229,8 +230,6 @@ void test_guarda_sala(){
     crea_sala(20);
     int ids_reserva[20] = {38 , 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57};
     reserva_multiple(20, ids_reserva);
-    int ids[10];
-    for(int i = 1; i <= 11; i++) ids[i-1] = i;
     DEBESERCIERTO(recupera_estado_sala(sin_permiso)== -1);
     DEBESERCIERTO(recupera_estado_sala(no_existe) == -1);
     DEBESERCIERTO(recupera_estado_sala(sala_vacia) == -1);
@@ -253,22 +252,53 @@ void test_guarda_sala(){
 
     if(DETALLES) estado_sala("Antes de recuperar la sala");
     
-    int ids_pares [] = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20};
     recupera_estado_sala(sala_37);
     if(DETALLES) estado_sala("Despues de recuperar la sala");
     DEBESERCIERTO(capacidad_sala() == asientos_ocupados() == 20);
     DEBESERCIERTO(asientos_libres() == 0);
-    for(int i = 1; i <= 20; i++){
-        DEBESERCIERTO(estado_asiento(i) == i + 37);
-        }
+    for(int i = 1; i <= 20; i++) DEBESERCIERTO(estado_asiento(i) == i + 37);
     if(DETALLES) estado_sala("ahora vamos a tratar de recuperar salas con distintas capacidades a nuestra sala");
     crea_sala(10);
     DEBESERCIERTO(recupera_estado_sala(sala_37) == -1);
 }
 
 
+void test_guarda_parcial_parcial(){
+    if(DETALLES) printf("Ahora vamos a intentar guardar parcialmente sin tener sala\n");
+    DEBESERCIERTO(guardar_estado_parcial_sala(sin_permiso, 10, ids_impares) == -1);
+    DEBESERCIERTO(guardar_estado_parcial_sala(no_existe, 10, ids_impares) == -1);
+    DEBESERCIERTO(guardar_estado_parcial_sala(sala_vacia, 10, ids_impares) == -1);
+    DEBESERCIERTO(guardar_estado_parcial_sala(sala_37, 10, ids_impares) == -1);
+    if(DETALLES) printf("Ahora vamos a intentar guardar una sala en ficheros sin permiso\n");
+    crea_sala(20);
+    DEBESERCIERTO(guardar_estado_parcial_sala(sin_permiso, 10, ids_impares) == -1);
+    DEBESERCIERTO(guardar_estado_parcial_sala(no_existe, 10, ids_impares) == -1);
+    DEBESERCIERTO(guardar_estado_parcial_sala(sala_vacia, 10, ids_impares) == -1);
+    if(DETALLES) printf("Ahora vamos a guardar los asientos pares de nuestra sala vacía en sala_creada.txt\n");
+    guarda_estado_parcial_sala(sala_creada, 12, ids_pares);
+    recupera_estado_sala(sala_creada);
+    for(int i = 1; i <= 10; i++) DEBESERCIERTO(estado_asiento(i*2) == 0);
+    if(DETALLES) printf("Ahora vamos a guardar los asientos pares el id 141\n");
+    while(reserva_asiento(141) != -1);
+    guarda_estado_parcial_sala(sala_creada, 12, ids_pares);
+    for(int i = 1; i <= 10; i++) DEBESERCIERTO(estado_asiento(i*2) == 141);
+    for(int i = 1; i <= 10; i++) DEBESERFALSO(estado_asiento(i*2 -1) != 141);
+    crea_sala(20);
+    reservaa_multiple(20, ids_5);
+    guarda_estado_parcial_sala(sala_creada, 20, ids_completos);
+    crea_sala(20);
+    recupera_estado_sala(sala_creada);
+    for(int i = 1; i <= 20; i++) DEBESERCIERTO(estado_asiento(i) == 5*i);    
+}
+
+
 int main(){
     setup();
+    test_general();
+    test_recupera_sala_parcial();
+    test_guarda_sala();
+    test_recupera_sala();
+    //test_guarda_parcial_sala();
     test_crea();
     test_reserva();
 
