@@ -439,7 +439,8 @@ void ejecuta_tests ()
 void test_completo_practica_3() {
     INICIO_TEST_NOMBRE("Completo 3");
     DebeSerCierto(crea_sala(10) == 10);
-    DebeSerCierto(gruada_estado_sala()
+    DebeSerCierto(gruada_estado_sala())
+}
 
 void main()
 {
