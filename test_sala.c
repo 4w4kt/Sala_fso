@@ -339,7 +339,7 @@ void test_completo2() {
     DebeSerCierto(reserva_multiple(3, personas_repedidas) == 3);
 
     ESTADO("Estado de la sala");
-
+ 
     DebeSerCierto(capacidad_sala() == asientos_ocupados());
     DebeSerCierto(asientos_libres() == 0);
     if (DETALLES) puts("Si la sala está llena no se pueden reservar más asientos con ninguna de las funciones:\n");
