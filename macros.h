@@ -66,7 +66,7 @@
  	}
  	
 #define CHECK_NARGUMENTOS(x, y)\
-		if (!(argc >= x && y) || !(argc == x && y)) {\
+		if ((argc < x && !y) || (argc != x && y)) {\
 			fprintf(stderr, "Error en comando: Número de argumentos incorrecto.\n");\
 			exit(1);\
 		}
@@ -93,3 +93,13 @@
 			perror("No se pudo recuperar el estado de la sala");\
 			exit(1);\
 		}
+		
+#define DISTINTAS(condition)\
+                if (condition) {\
+                        puts("Las salas no son iguales.");\
+			close(fd1);\
+			close(fd2);\
+			free(sala_1);\
+			free(sala_2);\
+			exit(1);\
+	        }

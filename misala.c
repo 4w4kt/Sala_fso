@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+
 #include "sala.h"
 #include "macros.h"
 
@@ -84,7 +85,7 @@ int main(int argc, char* argv[]) {
 	
 	if (!strcmp(option, "reserva")) {
 	
-		CHECK_NARGUMENTOS(6, 1);
+		CHECK_NARGUMENTOS(6, 0);
 		
 		int opt = getopt(argc, argv, "f:");
 		if (opt == -1) {
@@ -268,6 +269,7 @@ int main(int argc, char* argv[]) {
 
 
 	if(!strcmp(option, "compara")) {
+	
 		if(!strcmp(argv[2], argv[3])){
 			puts("Las salas son iguales.");
 			exit(0);
@@ -275,65 +277,52 @@ int main(int argc, char* argv[]) {
 		
 		int fd1 = open(argv[2], O_RDONLY);
 		CHECK_ERROR(fd1);
+		
 		int fd2 = open(argv[3], O_RDONLY);
 		CHECK_ERROR(fd2);
+		
 		int datos_sala_1[2];
-		int datos_sala_2[2];
 		ssize_t bytes_leidos = read(fd1, &datos_sala_1, sizeof(int)*2);
 		CHECK_LEIDO(bytes_leidos); 
+		
+		int datos_sala_2[2];
 		ssize_t bytes_leidos2 = read(fd2, &datos_sala_2, sizeof(int)*2);
 		CHECK_LEIDO(bytes_leidos2);
+		
 		if(datos_sala_1[0] != datos_sala_2[0] || datos_sala_1[1] != datos_sala_2[1]){
-			printf("Las salas no son iguales\n");
-			close(fd1);
-			close(fd2);
-			return 1;
+			puts("Las salas no son iguales");
+			close(fd1); close(fd2);
 			exit(1);
 		}
-		int accesos = 1;
-		int* sala_1 = NULL;
-		int* sala_2 = NULL;
-		while (sala_1 == NULL || sala_2 == NULL) {
-			sala_1 = malloc(sizeof(int) * (datos_sala_1[0] / accesos));
-			sala_2 = malloc(sizeof(int) * (datos_sala_2[0] / accesos));
-			accesos *= 2;
-		}
-		accesos /= 2;
+		
+		int* sala_1 = malloc(sizeof(int) * datos_sala_1[0]);
+		int* sala_2 = malloc(sizeof(int) * datos_sala_2[0]);
+
 		if((sala_1 == NULL  || sala_2 == NULL) && errno == ENOMEM){
-			perror("Error al asignar memoria para las dos salas");
+			perror("Error en la alocación de memoria");
 			exit(1);
 		}
+		
 		bytes_leidos = 1;
-		while (1){
-			ssize_t bytes_leidos = read(fd1, sala_1, sizeof(int) * (datos_sala_1[0] / accesos));
+		bytes_leidos2 = 1;
+		
+		while (bytes_leidos && bytes_leidos2){
+		
+			bytes_leidos = read(fd1, sala_1, sizeof(int) * datos_sala_1[0]);
 			CHECK_LEIDO(bytes_leidos);
-			ssize_t bytes_leidos2 = read(fd2, sala_2, sizeof(int) * (datos_sala_2[0] / accesos));
-			CHECK_LEIDO(bytes_leidos2);
-			if(bytes_leidos != bytes_leidos2){
-					printf("Las salas no son iguales\n");
-					close(fd1);
-					close(fd2);
-					free(sala_1);
-					free(sala_2);
-					return 1;
-					exit(1);
-			}
-			if(bytes_leidos == 0) break;
 			
-			for (int i = 0; i < bytes_leidos2*sizeof(int) && i < datos_sala_2[0] + 2; i++) {
-				if (*(sala_1 + i) != *(sala_2 + i)) {
-					printf("Las salas no son iguales %d %d != %d\n", i, *(sala_1 + i) ,*(sala_2 + i) );
-					close(fd1);
-					close(fd2);
-					free(sala_1);
-					free(sala_2);
-					return 1;
-					exit(1);
-				}
+			bytes_leidos2 = read(fd2, sala_2, sizeof(int) * datos_sala_2[0]);
+			CHECK_LEIDO(bytes_leidos2);
+			
+			DISTINTAS(bytes_leidos != bytes_leidos2);
+			
+			for (int i = 0; i < bytes_leidos2 / sizeof(int); i++) {
+				DISTINTAS(*(sala_1 + i) != *(sala_2 + i));
 			}
 		}
+		
+		DISTINTAS(bytes_leidos != bytes_leidos2);
 		puts("Las salas son iguales.");
 		exit(0);
 	}
-
 }
