@@ -421,13 +421,50 @@ void ejecuta_tests ()
     test_2asientos();
     test_completo1();
     test_completo2();
-    test_completo_practica_3();
+    test_set_asiento();
 }
 
-void test_completo_practica_3() {
-    INICIO_TEST_NOMBRE("Completo 3");
+void test_set_asiento() {
+    INICIO_TEST_NOMBRE("test_set_asiento");
     DebeSerCierto(crea_sala(10) == 10);
-    DebeSerCierto(gruada_estado_sala())
+    ESTADO("Creamos una sala");
+    DebeSerCierto(asientos_ocupados() == 0);
+    DebeSerCierto(asientos_libres() == 10);
+    if (DETALLES) puts(" modificar los valores de los asientos pares por el doble de la posicion de su asiento:\n");
+    for(int i = 2; i < 10; i+=2) {
+        set_asiento(i, i*2);
+    }
+    if (DETALLES) ESTADO("Estado de la sala");
+    DebeSerCierto(asientos_ocupados() == 5);
+    DebeSerCierto(asientos_libres() == 5);
+    for(int i = 2; i < 10; i+=2) {
+        DebeSerCierto(estado_asiento(i) == i*2);
+    }
+    if (DETALLES) puts("No se permiten modificar asientos con id inválido:\n");
+    DebeSerCierto(set_asiento(-1, 1) == -1);
+    DebeSerCierto(set_asiento(1000, 1) == -1);
+    DebeSerCierto(set_asiento(0, 1) == -1);
+    if(DETALLES) puts("No se permiten asignar a los asientos ids inválidos:\n");
+    DebeSerCierto(set_asiento(1, -1) == -1);
+    DebeSerCierto(set_asiento(1, 0) == -1);
+    if(DETALLES) {
+        estado_sala("Estado de la sala");
+        puts("ahora vamos a modicar los 5 primeros asientos, de tal forma que volveremos a modificar los asientos modificados previamente");
+    }
+    for(int i = 1; i < 6; i++) {
+        set_asiento(i, i+80);
+    }
+    if (DETALLES) ESTADO("Estado de la sala");
+    DebeSerCierto(asientos_ocupados() == 7);
+    DebeSerCierto(asientos_libres() == 3);
+    DebeSerCierto(estado_asiento(1) == 81);
+    DebeSerCierto(estado_asiento(2) == 4);
+    DebeSerCierto(estado_asiento(3) == 82);
+    DebeSerCierto(estado_asiento(4) == 8);
+    DebeSerCierto(estado_asiento(5) == 83);
+    DebeSerCierto(estado_asiento(6) == 12);
+    DebeSerCierto(capacidad_sala() == 10);
+
 }
 
 void main()

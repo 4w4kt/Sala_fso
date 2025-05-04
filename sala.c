@@ -144,6 +144,7 @@ int set_asiento(int id_asiento, int id_persona){
 
 int guarda_estado_sala(char* ruta_fichero){
 	if (sala == NULL) return -1;
+	if (access(ruta_fichero, W_OK) != 0 && errno == EACCES) return -1;
 	int mode = O_CREAT | O_WRONLY | O_TRUNC;
 	int fd = open(ruta_fichero, mode);
 	CHECK_ERROR(fd);
@@ -161,6 +162,7 @@ int guarda_estado_sala(char* ruta_fichero){
 
 int recupera_estado_sala(char* ruta_fichero){
 	if (sala == NULL) return -1;
+	if (access(ruta_fichero, R_OK) != 0 && errno == EACCES) return -1;
 	int fd = open(ruta_fichero, O_RDONLY);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);
@@ -173,6 +175,7 @@ int recupera_estado_sala(char* ruta_fichero){
 
 int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
 	if (sala == NULL) return -1;
+	if (num_asientos <= 0 || id_asientos == NULL) return -1;
 	
 	int fd = open(ruta_fichero, O_RDWR);
 	CHECK_ERROR(fd);
@@ -208,6 +211,10 @@ int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id
 }
 
 int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
+
+	if (sala == NULL) return -1;
+	if (num_asientos <= 0 || id_asientos == NULL) return -1;
+
 	int fd = open(ruta_fichero, O_RDONLY);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);
@@ -221,6 +228,7 @@ int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* 
 		set_asiento(id_asientos[i], estado_asiento_antiguo);
 	}
 	lseek(fd, sizeof(int), SEEK_SET);
+	close(fd);
 	return 0;
 }
 

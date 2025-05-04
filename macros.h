@@ -1,3 +1,5 @@
+#include <errno.h>
+
 /// TESTS
 
 #define DebeSerCierto(x)	assert(x)
@@ -46,7 +48,7 @@ void FIN_TEST (const char* titulo_test)
 	    }
 
 #define SELECT_DATOS_SALA(fd, control)\
-	int datos_sala [2];\
+	int datos_sala[] = {0, 0};\
 	ssize_t bytes_leidos = read(fd, &datos_sala, sizeof(int)*2);\
 	CHECK_LEIDO(bytes_leidos);\
 	\
@@ -86,23 +88,23 @@ void FIN_TEST (const char* titulo_test)
 
 #define CREA_SALA(x, fd)\
 		if (crea_sala(x) == -1) {\
-			if (fd > 0) close(fd);\
+			if (fd) close(fd);\
 			fprintf(stderr, "Error en la creación de la sala.\n");\
 			exit(1);\
 		}
 		
-#define GUARDA(sala, fd)\
+#define GUARDA(fd)\
 		if (guarda_estado_sala(dir) == -1) {\
-			if (sala) elimina_sala();\
+			elimina_sala();\
 			if (fd > 0) close(fd);\
 			perror("No se pudo guardar el estado de la sala");\
 			exit(1);\
 		}
 		
-#define RECUPERA(sala, fd)\
-                if (recupera_estado_sala(dir) == -1) {\
-			if (sala) elimina_sala();\
-			if (fd > 0) close(fd);\
+#define RECUPERA\
+            if (recupera_estado_sala(dir) == -1) {\
+			elimina_sala();\
+			close(fd);\
 			perror("No se pudo recuperar el estado de la sala");\
 			exit(1);\
 		}
@@ -116,3 +118,22 @@ void FIN_TEST (const char* titulo_test)
 			free(sala_2);\
 			exit(1);\
 	        }
+
+#define ABORTAR(asientos, fd, mensaje) \
+		free(asientos);\
+		asientos = NULL;\
+		close(fd);\
+		elimina_sala();\
+		fprintf(stderr, mensaje);\
+		exit(1);
+
+#define CIERRA_ANULA(error, mensaje)\
+                if (f) {\
+                  free(asientos); free(asientos_invalidos);\
+                  elimina_sala();\
+                  close(fd);\
+                }\
+                if (error) perror(mensaje);\
+                else fprintf(stderr, mensaje);\
+                exit(1);
+

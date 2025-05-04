@@ -5,40 +5,42 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "sala.h"
 #include "macros.h"
 
 #define MAX_BUFFER_SIZE 10000
 
- 	
-char* reservas_invalidas(int* reservas, int n_reservas, int personas) {
-	char* result = malloc(MAX_BUFFER_SIZE);
-	if (!result) return NULL;
-	
-	char* ptr = result;
-	int entradilla;
-	
-	if (personas < 0) entradilla = sprintf(ptr, "Identificadores inválidos: ");
-	else entradilla = sprintf(ptr, "Asientos inválidos: ");
-	
-	ptr += entradilla;
-	*ptr++ = '{';
-	
-	for (int i = 0; i < n_reservas; i++) {
-		int numero = sprintf(ptr, "%d, ", reservas[i]);
-		ptr += numero;
-	}
-	
-	*(ptr - 2) = '}';
-	*(ptr - 1) = '\0';
-	return result;
-}
+#define RESERVAS_INVALIDAS\
+	char* result = malloc(MAX_BUFFER_SIZE);\
+	if (!result) {CIERRA_ANULA(1, "Error en la alocación de memoria");}\
+	\
+	char* ptr = result;\
+	int entradilla;\
+	\
+	if (asientos_personas < 0) entradilla = sprintf(ptr, "Identificadores inválidos: ");\
+	else entradilla = sprintf(ptr, "Asientos inválidos: ");\
+	\
+	ptr += entradilla;\
+	*ptr++ = '{';\
+	int numero;\
+	\
+	for (int i = 0; i < n_asientos_invalidos; i++) {\
+		numero = sprintf(ptr, "%d, ", *(asientos_invalidos + i));\
+		ptr += numero;\
+	}\
+	\
+	*(ptr - 2) = '}';\
+	*(ptr - 1) = '\n';\
+	*ptr = '\0';
+
 
 int main(int argc, char* argv[]) {
 
 	char* option = argv[1];
 	char* dir;
+	opterr = 0;
 	
 	if (!strcmp(option, "crea")) {
 		int opt;
@@ -73,23 +75,23 @@ int main(int argc, char* argv[]) {
 				exit(1);
 			}
 		} else if (!access(dir, F_OK)) {
-			perror("La ruta ya existe pero no se ha indicado la opción de sobreescritura");
+			fprintf(stderr, "Error: La ruta ya existe pero no se ha indicado la opción de sobreescritura\n");
 			exit(1);
 		}
 
 		CREA_SALA(cap, 0);
-		GUARDA(1, 0);
+		GUARDA(0);
 		elimina_sala();
 		exit(0);
 	}
 	
 	if (!strcmp(option, "reserva")) {
 	
-		CHECK_NARGUMENTOS(6, 0);
+		CHECK_NARGUMENTOS(5, 0);
 		
 		int opt = getopt(argc, argv, "f:");
 		if (opt == -1) {
-			perror("Lectura de ruta incorrecta");
+			fprintf(stderr, "Error: Lectura de ruta incorrecta.\n");
 			exit(1);
 		}
 		
@@ -115,136 +117,129 @@ int main(int argc, char* argv[]) {
 		for (int i = optind; i < argc; i++) {
 			n_asientos++;
 			if (n_asientos > max_asientos) {
-				free(asientos);
-				asientos = NULL;
-				close(fd);
-				
-				perror("Ha intentado reservar más asientos de los disponibles");
-				exit(1);
+				ABORTAR(asientos, fd, "Error: Ha intentado reservar más asientos de los disponibles.\n")
 			}
 			*(asientos + n_asientos - 1) = atoi(argv[i]);
 		}
 		
-		RECUPERA(1, 1);
-		
-		if (reserva_multiple(n_asientos, asientos) == -1) {
-			elimina_sala();
-			perror("Reserva de los asientos fallida");
-			exit(1);
+		if (n_asientos == 0) {
+			ABORTAR(asientos, fd, "Error: Reserva de los asientos fallida (consulte el orden de los argumentos)\n")
 		}
 		
-		GUARDA(1, 1);
+		RECUPERA;
 		
+		if (reserva_multiple(n_asientos, asientos) == -1) {
+			ABORTAR(asientos, fd, "Error: Reserva de los asientos fallida (consulte los IDs a reservar)\n")
+		}
+		
+		GUARDA(1);
+		
+		free(asientos);
+		asientos = NULL;
 		elimina_sala();
 		exit(0);
 	}
 
 	if (!strcmp(option, "anula")) {
 	
-	    int opt, fd, capacidad, n_asientos, n_asientos_invalidos;
-	    int* asientos;
-	    int* asientos_invalidos;
-	    
+		CHECK_NARGUMENTOS(6, 0);
+	
+		char** argv_copy = malloc(argc*sizeof(char*));
+		for (int i = 0; i < argc; i++) {
+			*(argv_copy + i) = argv[i];
+		}
+		
+		int opt;
+	    	int fd, capacidad, n_asientos, n_asientos_invalidos;
+	    	int* asientos;
+		int* asientos_invalidos;
+		
 		struct option longopts[] = {
-			{"asientos", required_argument, NULL, 'a'},
-			{"personas", required_argument, NULL, 'p'},
+			{"asientos", no_argument, NULL, 'a'},
+			{"personas", no_argument, NULL, 'p'},
 			{0, 0, 0, 0}
 		};
 
 		int asientos_personas = 0;
+		int f = 0;
+		int start = 0;
 		optind = 2;
 		
 		while ((opt = getopt_long_only(argc, argv, "f:", longopts, NULL)) != -1) {
-	        if (opt == 'f') {
-	                dir = optarg;
-	                		
-					fd = open(dir, O_RDONLY);
-					CHECK_ERROR(fd);
-					
-					SELECT_DATOS_SALA(fd, 0);
-					CREA_SALA(datos_sala[0], 1);
-					
-					asientos = malloc(capacidad * sizeof(int));
-					n_asientos = 0;
-		
-					asientos_invalidos = malloc(capacidad * sizeof(int));
-					n_asientos_invalidos = 0;
-		
-					if (asientos == NULL || asientos_invalidos == NULL) {
-						elimina_sala();
-						close(fd);
-						perror("Error en la alocación de memoria");
-						exit(1);
-					}
-					
-	                continue;
-	        }
-	        if (opt == 'a') {
-	        		if (asientos_personas == -1) {
-	        			perror("Ha intentado anular reservas de asientos y personas a la vez");
-	        			exit(1);
-	        		}
-	                asientos_personas = 1;
-	                ASIENTO_CORRECTO(atoi(optarg));
-	                continue;
-	        }
-	        if (opt == 'p') {
-	        		if (asientos_personas == 1) {
-	        			perror("Ha intentado anular reservas de asientos y personas a la vez");
-	        			exit(1);
-	        		}
-	        		asientos_personas = -1;
-	        		if (recupera_estado_sala(dir) == -1) {
-	        			elimina_sala();
-	        			perror("Error al recuperar el estado de la sala");
-	        			exit(1);
-	        		}
-	        		PERSONA_CORRECTA(atoi(optarg));
-	        		continue;
-	        }
-	        if (opt == '?') {
-	        	continue;
-	        }
+			if (opt == 'f') {
+				dir = optarg;
+			    
+			    	fd = open(dir, O_RDONLY);
+				CHECK_ERROR(fd);
+				
+				SELECT_DATOS_SALA(fd, 0);
+				capacidad = datos_sala[0];
+				CREA_SALA(capacidad, 1);
+				
+				asientos = malloc(capacidad * sizeof(int));
+				n_asientos = 0;
+
+				asientos_invalidos = malloc(capacidad * sizeof(int));
+				n_asientos_invalidos = 0;
+
+				if (asientos == NULL || asientos_invalidos == NULL) {CIERRA_ANULA(1, "Error en la alocación de memoria");}
+				f = optind - 2;
+				continue;
+			
+			}
+			if (opt == 'a') {
+				if (asientos_personas == -1) {CIERRA_ANULA(0, "Ha intentado anular reservas de asientos y personas a la vez\n");}
+			        asientos_personas = 1;
+			        start = optind;
+			        continue;
+			}
+			if (opt == 'p') {
+				if (asientos_personas == 1) {CIERRA_ANULA(0, "Ha intentado anular reservas de asientos y personas a la vez\n");}
+				asientos_personas = -1;
+				start = optind;
+				continue;
+			}
 		}
 		
-		if (asientos_personas == 0) {
-			perror("No se han indicado correctamente las reservas a anular (asientos/personas)");
+		if (!f) {
+			fprintf(stderr, "Error: Lectura de ruta incorrecta.\n");
 			exit(1);
 		}
+		
+		if (!asientos_personas) {CIERRA_ANULA(0, "No se han indicado correctamente las reservas a anular (asientos/personas)\n");}
 		
 		if (asientos_personas > 0) {
-			for (int i = optind; i < argc; i++) {
-					ASIENTO_CORRECTO(atoi(argv[optind]));
+			if (start < f) {
+				for (int i = start; i < f; i++) {ASIENTO_CORRECTO(atoi(argv_copy[i]));}
+			} else {
+				for (int i = start; i < argc; i++) {ASIENTO_CORRECTO(atoi(argv_copy[i]));}
 			}
-			if (recupera_estado_parcial_sala(dir, n_asientos, asientos) == -1) {
-				elimina_sala();
-				perror("Error al recuperar el estado de la sala");
-				exit(1);
-			}
-			for (int i = 0; i < n_asientos; i++) {
-				libera_asiento(*(asientos + i));
+			if (n_asientos > 0) {
+				if (recupera_estado_parcial_sala(dir, n_asientos, asientos) == -1) {CIERRA_ANULA(0, "Error al recuperar el estado de la sala\n");}
+				for (int i = 0; i < n_asientos; i++) libera_asiento(*(asientos + i));
 			}
 		} else {
-			for (int i = optind; i < argc; i++) {
-					PERSONA_CORRECTA(atoi(argv[i]));
+			if (recupera_estado_sala(dir) == -1) {CIERRA_ANULA(0, "Error al recuperar el estado de la sala\n");}
+			if (start < f) {
+				for (int i = start; i < f; i++) {PERSONA_CORRECTA(atoi(argv_copy[i]));}
+			} else {
+				for (int i = start; i < argc; i++) {PERSONA_CORRECTA(atoi(argv_copy[i]));}
 			}
-			
 		}
 		
-		if (guarda_estado_parcial_sala(dir, n_asientos, asientos) == -1) {
-			elimina_sala();
-			perror("Se produjo un error al guardar el estado de la sala");
-			exit(1);
-		}
-		elimina_sala();
+		if (n_asientos > 0 && guarda_estado_parcial_sala(dir, n_asientos, asientos) == -1) {CIERRA_ANULA(0, "Se produjo un error al guardar el estado de la sala\n");}
+		
 		if (n_asientos_invalidos > 0) {
-			perror(reservas_invalidas(asientos_invalidos, n_asientos_invalidos, asientos_personas));
-			exit(1);
+		RESERVAS_INVALIDAS;
+		CIERRA_ANULA(0, result);
 		}
+			
 		exit(0);
 	}
 	
 	if (!strcmp(option, "estado")) {
+	
+		CHECK_NARGUMENTOS(4, 1);
 	
 		int opt = getopt(argc, argv, "f:");
 		if (opt == -1) {
@@ -260,7 +255,7 @@ int main(int argc, char* argv[]) {
 		CREA_SALA(datos_sala[0], 1);
 		
 		
-		RECUPERA(1, 1);
+		RECUPERA;
 		estado_sala("========= Estado de la sala =========");
 		elimina_sala();
 		close(fd);
@@ -269,6 +264,8 @@ int main(int argc, char* argv[]) {
 
 
 	if(!strcmp(option, "compara")) {
+	
+		CHECK_NARGUMENTOS(4, 1);
 	
 		if(!strcmp(argv[2], argv[3])){
 			puts("Las salas son iguales.");
@@ -290,7 +287,7 @@ int main(int argc, char* argv[]) {
 		CHECK_LEIDO(bytes_leidos2);
 		
 		if(datos_sala_1[0] != datos_sala_2[0] || datos_sala_1[1] != datos_sala_2[1]){
-			puts("Las salas no son iguales");
+			puts("Las salas no son iguales.");
 			close(fd1); close(fd2);
 			exit(1);
 		}
@@ -300,6 +297,8 @@ int main(int argc, char* argv[]) {
 
 		if((sala_1 == NULL  || sala_2 == NULL) && errno == ENOMEM){
 			perror("Error en la alocación de memoria");
+			free(sala_1); free(sala_2);
+			close(fd1); close(fd2);
 			exit(1);
 		}
 		
@@ -325,4 +324,4 @@ int main(int argc, char* argv[]) {
 		puts("Las salas son iguales.");
 		exit(0);
 	}
-}
+} 
