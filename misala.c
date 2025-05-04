@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		CREA_SALA(cap, 0);
-		GUARDA(1, 0);
+		GUARDA(0);
 		elimina_sala();
 		exit(0);
 	}
@@ -115,35 +115,25 @@ int main(int argc, char* argv[]) {
 		for (int i = optind; i < argc; i++) {
 			n_asientos++;
 			if (n_asientos > max_asientos) {
-				free(asientos);
-				asientos = NULL;
-				close(fd);
-				
-				fprintf(stderr, "Error: Ha intentado reservar más asientos de los disponibles.\n");
-				exit(1);
+				ABORTAR(asientos, fd, "Error: Ha intentado reservar más asientos de los disponibles.\n")
 			}
 			*(asientos + n_asientos - 1) = atoi(argv[i]);
 		}
 		
 		if (n_asientos == 0) {
-			elimina_sala();
-			free(asientos);
-			fprintf(stderr, "Error: Reserva de los asientos fallida (consulte el orden de los argumentos)\n");
-			exit(1);
+			ABORTAR(asientos, fd, "Error: Reserva de los asientos fallida (consulte el orden de los argumentos)\n")
 		}
 		
-		RECUPERA(1, 1);
+		RECUPERA;
 		
 		if (reserva_multiple(n_asientos, asientos) == -1) {
-			elimina_sala();
-			free(asientos);
-			fprintf(stderr, "Error: Reserva de los asientos fallida (consulte los IDs a reservar)\n");
-			exit(1);
+			ABORTAR(asientos, fd, "Error: Reserva de los asientos fallida (consulte los IDs a reservar)\n")
 		}
 		
-		GUARDA(1, 1);
+		GUARDA(1);
 		
 		free(asientos);
+		asientos = NULL;
 		elimina_sala();
 		exit(0);
 	}
@@ -187,7 +177,6 @@ int main(int argc, char* argv[]) {
 				perror("Error en la alocación de memoria");
 				exit(1);
 			}
-			
 	                continue;
 	        }
 	        if (opt == 'a') {
@@ -268,7 +257,7 @@ int main(int argc, char* argv[]) {
 		CREA_SALA(datos_sala[0], 1);
 		
 		
-		RECUPERA(1, 1);
+		RECUPERA;
 		estado_sala("========= Estado de la sala =========");
 		elimina_sala();
 		close(fd);
@@ -308,6 +297,8 @@ int main(int argc, char* argv[]) {
 
 		if((sala_1 == NULL  || sala_2 == NULL) && errno == ENOMEM){
 			perror("Error en la alocación de memoria");
+			free(sala_1); free(sala_2);
+			close(fd1); close(fd2);
 			exit(1);
 		}
 		

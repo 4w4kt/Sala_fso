@@ -228,6 +228,7 @@ int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* 
 		set_asiento(id_asientos[i], estado_asiento_antiguo);
 	}
 	lseek(fd, sizeof(int), SEEK_SET);
+	close(fd);
 	return 0;
 }
 
