@@ -73,23 +73,23 @@
 
 #define CREA_SALA(x, fd)\
 		if (crea_sala(x) == -1) {\
-			if (fd > 0) close(fd);\
+			if (fd) close(fd);\
 			fprintf(stderr, "Error en la creación de la sala.\n");\
 			exit(1);\
 		}
 		
-#define GUARDA(sala, fd)\
+#define GUARDA(fd)\
 		if (guarda_estado_sala(dir) == -1) {\
-			if (sala) elimina_sala();\
+			elimina_sala();\
 			if (fd > 0) close(fd);\
 			perror("No se pudo guardar el estado de la sala");\
 			exit(1);\
 		}
 		
-#define RECUPERA(sala, fd)\
-                if (recupera_estado_sala(dir) == -1) {\
-			if (sala) elimina_sala();\
-			if (fd > 0) close(fd);\
+#define RECUPERA\
+            if (recupera_estado_sala(dir) == -1) {\
+			elimina_sala();\
+			close(fd);\
 			perror("No se pudo recuperar el estado de la sala");\
 			exit(1);\
 		}
@@ -103,3 +103,13 @@
 			free(sala_2);\
 			exit(1);\
 	        }
+
+#define ABORTAR(*int asientos, int fd, char* mensaje){ \
+				free(asientos);\
+				asientos = NULL;\
+				close(fd);\
+				elimina_sala();\
+				fprintf(stderr, mensaje);\
+				exit(1);\
+}
+
