@@ -222,7 +222,7 @@ void test_guarda_sala(){
     recupera_estado_sala(sala_vacia_20);
     if(DETALLES) estado_sala("sala_vacia_20.txt");
     COMPROBAR_SALA_VACIA(20);
-    if(DETALLES) printf("Ahora vamos a guardar una sala vacía de 10 asientos en sala_vacia_20.txt\n");
+    if(DETALLES) printf("Ahora vamos a sobreescribir sala vacía de 10 asientos en sala_vacia_20.txt\n");
     crea_sala(10);
     DebeSerCierto(guarda_estado_sala(sala_vacia_20) == 0);
     reserva_asiento(1);
@@ -233,7 +233,12 @@ void test_guarda_sala(){
     DebeSerCierto(guarda_estado_sala(sala_llena_10) == 0);
     if(DETALLES) estado_sala("sala_llena_10.txt");
     crea_sala(10);
+    if(DETALLES){
+        printf("vaciamos la sala");
+        estado_sala("Antes de recuperar la sala");
+    }
     recupera_estado_sala(sala_llena_10);
+    if(DETALLES) estado_sala("Después de recuperar la sala");
     for (int i = 1; i <= 10; i++){
         DebeSerCierto(estado_asiento(i) == i*3);
     }
@@ -270,7 +275,6 @@ void test_recupera_sala() {
     crea_sala(20);
 
     if(DETALLES) estado_sala("Antes de recuperar la sala");
-    
     recupera_estado_sala(sala_37);
     if(DETALLES) estado_sala("Despues de recuperar la sala");
     DebeSerCierto(capacidad_sala() == asientos_ocupados());
