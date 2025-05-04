@@ -154,7 +154,7 @@ void test_recupera_sala_parcial(){
     int ids_reserva[] = {97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116};
     reserva_multiple(20, ids_reserva);
 
-    if (DETALLES) puts("No se pueden recuperar salas sin permisos, que no existen, vacías.")
+    if (DETALLES) puts("No se pueden recuperar salas sin permisos, que no existen, vacías.");
 
     // DebeSerCierto(recupera_estado_parcial_sala(sin_permisos, 10, ids_primeros)== -1); // ABRIR EN MODO USUARIO
     DebeSerCierto(recupera_estado_parcial_sala(no_existe, 10, ids_primeros) == -1);
