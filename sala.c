@@ -208,13 +208,13 @@ int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id
 }
 
 int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
-	int fd = open(ruta_fichero, O_RDWR);
+	int fd = open(ruta_fichero, O_RDONLY);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);
 	
 	int estado_asiento_antiguo;
 	for(int i = 0; i < num_asientos; i++){
-		lseek(fd, sizeof(int)* id_asientos[i] + 1, SEEK_SET);
+		lseek(fd, sizeof(int)* (id_asientos[i] + 1), SEEK_SET);
 		ssize_t bytes_leidos = read(fd, &estado_asiento_antiguo, sizeof(int));
 		CHECK_LEIDO(bytes_leidos);
 		if(bytes_leidos == 0) continue;

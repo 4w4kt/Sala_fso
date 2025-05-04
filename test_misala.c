@@ -184,7 +184,7 @@ void test_recupera_sala_parcial(){
     DebeSerCierto(asientos_libres() == asientos_ocupados());
     DebeSerCierto(asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++){
-        DebeSerCierto(estado_asiento(i*2) == i*2 + 98);
+        DebeSerCierto(estado_asiento(i*2) == i*2 + 96);
     }
     if(DETALLES) printf("Ahora vamos a tratar de recuperar la  sala con argumentos incurrectos\n");
     for(int i=0; i<20;i++) ids_reserva[i] = i+30;
@@ -198,7 +198,7 @@ void test_recupera_sala_parcial(){
     DebeSerCierto(capacidad_sala() == asientos_ocupados());
     DebeSerCierto(asientos_ocupados() == 20);
     DebeSerCierto(asientos_libres() == 0);
-    for(int i = 1; i <= 20; i++) DebeSerCierto(estado_asiento(i) == i + 97);
+    for(int i = 1; i <= 20; i++) DebeSerCierto(estado_asiento(i) == i + 96);
 
     if(DETALLES) estado_sala("ahora vamos a tratar de recuperar asientos con una sala de capacidad errónea");
     crea_sala(10);
