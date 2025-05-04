@@ -161,6 +161,7 @@ int main(int argc, char* argv[]) {
 		int asientos_personas = 0;
 		int f = 0;
 		int start = 0;
+		opterr = 0;
 		optind = 2;
 		
 		while ((opt = getopt_long_only(argc, argv, "f:", longopts, NULL)) != -1) {
@@ -181,20 +182,20 @@ int main(int argc, char* argv[]) {
 				n_asientos_invalidos = 0;
 
 				if (asientos == NULL || asientos_invalidos == NULL) {CIERRA_ANULA(1, "Error en la alocación de memoria");}
-				f = optind - 1;
+				f = optind - 2;
 				continue;
 			
 			}
 			if (opt == 'a') {
 				if (asientos_personas == -1) {CIERRA_ANULA(0, "Ha intentado anular reservas de asientos y personas a la vez\n");}
 			        asientos_personas = 1;
-			        start = optind - 1;
+			        start = optind;
 			        continue;
 			}
 			if (opt == 'p') {
 				if (asientos_personas == 1) {CIERRA_ANULA(0, "Ha intentado anular reservas de asientos y personas a la vez\n");}
 				asientos_personas = -1;
-				start = optind - 1;
+				start = optind;
 				continue;
 			}
 		}
@@ -207,10 +208,10 @@ int main(int argc, char* argv[]) {
 		if (!asientos_personas) {CIERRA_ANULA(0, "No se han indicado correctamente las reservas a anular (asientos/personas)\n");}
 		
 		if (asientos_personas > 0) {
-			for (int i = start; i < f; i++) {
-				if (argv_copy[i][0] == '-') break;
-				if (!isdigit(argv_copy[i][0])) continue;
-				ASIENTO_CORRECTO(atoi(argv_copy[i]));
+			if (start < f) {
+				for (int i = start; i < f; i++) {ASIENTO_CORRECTO(atoi(argv_copy[i]));}
+			} else {
+				for (int i = start; i < argc; i++) {ASIENTO_CORRECTO(atoi(argv_copy[i]));}
 			}
 			if (n_asientos > 0) {
 				if (recupera_estado_parcial_sala(dir, n_asientos, asientos) == -1) {CIERRA_ANULA(0, "Error al recuperar el estado de la sala\n");}
@@ -218,10 +219,10 @@ int main(int argc, char* argv[]) {
 			}
 		} else {
 			if (recupera_estado_sala(dir) == -1) {CIERRA_ANULA(0, "Error al recuperar el estado de la sala\n");}
-			for (int i = start; i < f; i++) {
-				if (argv_copy[i][0] == '-') break;
-				if (!isdigit(argv_copy[i][0])) continue;
-				PERSONA_CORRECTA(atoi(argv_copy[i]));
+			if (start < f) {
+				for (int i = start; i < f; i++) {PERSONA_CORRECTA(atoi(argv_copy[i]));}
+			} else {
+				for (int i = start; i < argc; i++) {PERSONA_CORRECTA(atoi(argv_copy[i]));}
 			}
 		}
 		
