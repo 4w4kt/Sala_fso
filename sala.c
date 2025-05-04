@@ -174,10 +174,6 @@ int recupera_estado_sala(char* ruta_fichero){
 int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
 	if (sala == NULL) return -1;
 	
-	for (int i = 0; i < num_asientos; i++) {
-		printf("FRUSTRADA TU PUTA MADRE %d\n", id_asientos[i]);
-	}
-	
 	int fd = open(ruta_fichero, O_RDWR);
 	CHECK_ERROR(fd);
 	SELECT_DATOS_SALA(fd, 1);

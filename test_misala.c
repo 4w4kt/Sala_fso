@@ -80,7 +80,8 @@ void test_general(){
     if(DETALLES) printf("Vamos a cargar la sala de sala_2.txt\n");
     recupera_estado_sala(sala_2);
     DebeSerCierto(capacidad_sala() == 20);
-    DebeSerCierto(asientos_libres() == asientos_ocupados() == 10);
+    DebeSerCierto(asientos_libres() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++) DebeSerCierto(estado_asiento(i) == 1);
     for(int i = 11; i <= 20; i++) DebeSerCierto(estado_asiento(i) == 0);
 
@@ -98,11 +99,15 @@ void test_general(){
         printf("y sala_4.txt tiene la sala actual\n");
         }
     guarda_estado_sala(sala_4);
+    crea_sala(20);
+    guarda_estado_sala(sala_3);
+    recupera_estado_sala(sala_4);
     guarda_estado_parcial_sala(sala_3, 10, ids_ultimos);
     if(DETALLES) printf("Ahora vamos a comprobar que la sala_1.txt tiene los primeros 10 asientos reservados por el id 1\n");
     recupera_estado_sala(sala_1);
     DebeSerCierto(capacidad_sala() == 20);
-    DebeSerCierto(asientos_libres() == asientos_ocupados() == 10);
+    DebeSerCierto(asientos_libres() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++) DebeSerCierto(estado_asiento(i) == 1);
     for(int i = 11; i <= 20; i++) DebeSerCierto(estado_asiento(i) == 0);
     if(DETALLES){
@@ -111,7 +116,8 @@ void test_general(){
     }
     recupera_estado_sala(sala_2);
     DebeSerCierto(capacidad_sala() == 20);
-    DebeSerCierto(asientos_libres() == asientos_ocupados() == 10);
+    DebeSerCierto(asientos_libres() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++) DebeSerCierto(estado_asiento(i) == 1);
     for(int i = 11; i <= 20; i++) DebeSerCierto(estado_asiento(i) == 0);
     if(DETALLES) {
@@ -121,7 +127,8 @@ void test_general(){
     crea_sala(20);
     recupera_estado_sala(sala_3);
     DebeSerCierto(capacidad_sala() == 20);
-    DebeSerCierto(asientos_libres() == asientos_ocupados() == 10);
+    DebeSerCierto(asientos_libres() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++) DebeSerCierto(estado_asiento(i) == 0);
     for(int i = 11; i <= 20; i++) DebeSerCierto(estado_asiento(i) == 2);
     if(DETALLES){
@@ -129,7 +136,8 @@ void test_general(){
         printf("Ahora vamos a comprobar que la sala_4.txt tiene la sala actual\n");
     }
     recupera_estado_sala(sala_4);
-    DebeSerCierto(capacidad_sala() == asientos_ocupados() == 20);
+    DebeSerCierto(capacidad_sala() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 20);
     DebeSerCierto(asientos_libres() == 0);
     for(int i = 1; i <= 10; i++) DebeSerCierto(estado_asiento(i) == 1);
     for(int i = 11; i <= 20; i++) DebeSerCierto(estado_asiento(i) == 2);
@@ -157,8 +165,9 @@ void test_recupera_sala_parcial(){
         estado_sala("sala_recuperada.txt");
     }
 
-    for(int i = 1; i <= 20; i++) DebeSerCierto(estado_asiento(i) == i + 97);
-    DebeSerCierto(capacidad_sala() == asientos_ocupados() == 20);
+    for(int i = 1; i <= 20; i++) DebeSerCierto(estado_asiento(i) == i + 96);
+    DebeSerCierto(capacidad_sala() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 20);
     DebeSerCierto(asientos_libres() == 0);
     if(DETALLES){
         printf("Ahora vamos a guardar la sala actual en sala_recuperada.txt\n");
@@ -172,7 +181,8 @@ void test_recupera_sala_parcial(){
     recupera_estado_parcial_sala(sala_97, 12, ids_pares);
     if(DETALLES) estado_sala("Después de recuperar los asientos pares");
     DebeSerCierto(capacidad_sala() == 20);
-    DebeSerCierto(asientos_libres() == asientos_ocupados() == 10);
+    DebeSerCierto(asientos_libres() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 10);
     for(int i = 1; i <= 10; i++){
         DebeSerCierto(estado_asiento(i*2) == i*2 + 98);
     }
@@ -185,7 +195,8 @@ void test_recupera_sala_parcial(){
     }
     recupera_estado_parcial_sala(sala_97, 12, ids_impares);
     if(DETALLES) estado_sala("Despues de recuperar los asientos impares");
-    DebeSerCierto(capacidad_sala() == asientos_ocupados() == 20);
+    DebeSerCierto(capacidad_sala() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 20);
     DebeSerCierto(asientos_libres() == 0);
     for(int i = 1; i <= 20; i++) DebeSerCierto(estado_asiento(i) == i + 97);
 
@@ -226,7 +237,8 @@ void test_guarda_sala(){
     for (int i = 1; i <= 10; i++){
         DebeSerCierto(estado_asiento(i) == i*3);
     }
-    DebeSerCierto(capacidad_sala() == asientos_ocupados() == 10);
+    DebeSerCierto(capacidad_sala() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 10);
     DebeSerCierto(asientos_libres() == 0);
     }
 
@@ -250,7 +262,8 @@ void test_recupera_sala() {
 
     for(int i = 1; i <= 20; i++) DebeSerCierto(estado_asiento(i) == i + 38);
     
-    DebeSerCierto(capacidad_sala() == asientos_ocupados() == 20);
+    DebeSerCierto(capacidad_sala() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 20);
     DebeSerCierto(asientos_libres() == 0);
     if(DETALLES) printf("Ahora vamos a guardar la sala actual en sala_37.txt\n");
     guarda_estado_sala(sala_37);
@@ -260,7 +273,8 @@ void test_recupera_sala() {
     
     recupera_estado_sala(sala_37);
     if(DETALLES) estado_sala("Despues de recuperar la sala");
-    DebeSerCierto(capacidad_sala() == asientos_ocupados() == 20);
+    DebeSerCierto(capacidad_sala() == asientos_ocupados());
+    DebeSerCierto(asientos_ocupados() == 20);
     DebeSerCierto(asientos_libres() == 0);
     for(int i = 1; i <= 20; i++) DebeSerCierto(estado_asiento(i) == i + 37);
     if(DETALLES) estado_sala("ahora vamos a tratar de recuperar salas con distintas capacidades a nuestra sala");
@@ -271,15 +285,15 @@ void test_recupera_sala() {
 
 void test_guarda_parcial_sala(){
     if(DETALLES) printf("Ahora vamos a intentar guardar parcialmente sin tener sala\n");
-    DebeSerCierto(guardar_estado_parcial_sala(sin_permisos, 10, ids_impares) == -1);
-    DebeSerCierto(guardar_estado_parcial_sala(no_existe, 10, ids_impares) == -1);
-    DebeSerCierto(guardar_estado_parcial_sala(fichero_vacio, 10, ids_impares) == -1);
-    DebeSerCierto(guardar_estado_parcial_sala(sala_37, 10, ids_impares) == -1);
+    DebeSerCierto(guarda_estado_parcial_sala(sin_permisos, 10, ids_impares) == -1);
+    DebeSerCierto(guarda_estado_parcial_sala(no_existe, 10, ids_impares) == -1);
+    DebeSerCierto(guarda_estado_parcial_sala(fichero_vacio, 10, ids_impares) == -1);
+    DebeSerCierto(guarda_estado_parcial_sala(sala_37, 10, ids_impares) == -1);
     if(DETALLES) printf("Ahora vamos a intentar guardar una sala en ficheros sin permiso\n");
     crea_sala(20);
-    DebeSerCierto(guardar_estado_parcial_sala(sin_permisos, 10, ids_impares) == -1);
-    DebeSerCierto(guardar_estado_parcial_sala(no_existe, 10, ids_impares) == -1);
-    DebeSerCierto(guardar_estado_parcial_sala(fichero_vacio, 10, ids_impares) == -1);
+    DebeSerCierto(guarda_estado_parcial_sala(sin_permisos, 10, ids_impares) == -1);
+    DebeSerCierto(guarda_estado_parcial_sala(no_existe, 10, ids_impares) == -1);
+    DebeSerCierto(guarda_estado_parcial_sala(fichero_vacio, 10, ids_impares) == -1);
     if(DETALLES) printf("Ahora vamos a guardar los asientos pares de nuestra sala vacía en sala_creada.txt\n");
     guarda_estado_parcial_sala(sala_creada, 12, ids_pares);
     recupera_estado_sala(sala_creada);
