@@ -9,6 +9,19 @@
                 for (int i = 0; i < nCheck; i++)\
                 DebeSerCierto(libera_asiento(ids[i]) == results[i]);
 
+void INICIO_TEST (const char* titulo_test)
+	{
+		printf("\n********** Batería de pruebas para %s:\n", titulo_test);
+		// fflush fuerza que se imprima el mensaje anterior
+		// sin necesidad de utilizar un salto de línea
+		fflush(stdout);
+	}
+	
+void FIN_TEST (const char* titulo_test)
+	{
+		if (DETALLES) printf ("********** Test %s - completado.\n", titulo_test);
+		else printf("- Test %s completado\n", titulo_test);
+	}
 
 /// Control ficheros
 
