@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
 
 	char* option = argv[1];
 	char* dir;
+	opterr = 0;
 	
 	if (!strcmp(option, "crea")) {
 		int opt;
@@ -141,6 +142,8 @@ int main(int argc, char* argv[]) {
 
 	if (!strcmp(option, "anula")) {
 	
+		CHECK_NARGUMENTOS(6, 0);
+	
 		char** argv_copy = malloc(argc*sizeof(char*));
 		for (int i = 0; i < argc; i++) {
 			*(argv_copy + i) = argv[i];
@@ -160,7 +163,6 @@ int main(int argc, char* argv[]) {
 		int asientos_personas = 0;
 		int f = 0;
 		int start = 0;
-		opterr = 0;
 		optind = 2;
 		
 		while ((opt = getopt_long_only(argc, argv, "f:", longopts, NULL)) != -1) {
@@ -237,6 +239,8 @@ int main(int argc, char* argv[]) {
 	
 	if (!strcmp(option, "estado")) {
 	
+		CHECK_NARGUMENTOS(4, 1);
+	
 		int opt = getopt(argc, argv, "f:");
 		if (opt == -1) {
 			perror("Lectura de ruta incorrecta");
@@ -261,6 +265,8 @@ int main(int argc, char* argv[]) {
 
 	if(!strcmp(option, "compara")) {
 	
+		CHECK_NARGUMENTOS(4, 1);
+	
 		if(!strcmp(argv[2], argv[3])){
 			puts("Las salas son iguales.");
 			exit(0);
@@ -281,7 +287,7 @@ int main(int argc, char* argv[]) {
 		CHECK_LEIDO(bytes_leidos2);
 		
 		if(datos_sala_1[0] != datos_sala_2[0] || datos_sala_1[1] != datos_sala_2[1]){
-			puts("Las salas no son iguales");
+			puts("Las salas no son iguales.");
 			close(fd1); close(fd2);
 			exit(1);
 		}
