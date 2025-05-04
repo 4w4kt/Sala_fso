@@ -1,3 +1,5 @@
+#include <errno.h>
+
 /// TESTS
 
 #define DebeSerCierto(x)	assert(x)
@@ -104,12 +106,21 @@
 			exit(1);\
 	        }
 
-#define ABORTAR(*int asientos, int fd, char* mensaje){ \
-				free(asientos);\
-				asientos = NULL;\
-				close(fd);\
-				elimina_sala();\
-				fprintf(stderr, mensaje);\
-				exit(1);\
-}
+#define ABORTAR(asientos, fd, mensaje) \
+		free(asientos);\
+		asientos = NULL;\
+		close(fd);\
+		elimina_sala();\
+		fprintf(stderr, mensaje);\
+		exit(1);
+
+#define CIERRA_ANULA(error, mensaje)\
+                if (f) {\
+                  free(asientos); free(asientos_invalidos);\
+                  elimina_sala();\
+                  close(fd);\
+                }\
+                if (error) perror(mensaje);\
+                else fprintf(stderr, mensaje);\
+                exit(1);
 
