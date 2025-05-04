@@ -33,7 +33,7 @@
 	    }
 
 #define SELECT_DATOS_SALA(fd, control)\
-	int datos_sala [2];\
+	int datos_sala[] = {0, 0};\
 	ssize_t bytes_leidos = read(fd, &datos_sala, sizeof(int)*2);\
 	CHECK_LEIDO(bytes_leidos);\
 	\
