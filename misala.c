@@ -12,30 +12,29 @@
 
 #define MAX_BUFFER_SIZE 10000
 
- 	
-char* reservas_invalidas(int* reservas, int n_reservas, int personas) {
-	char* result = malloc(MAX_BUFFER_SIZE);
-	if (!result) return NULL;
-	
-	char* ptr = result;
-	int entradilla;
-	
-	if (personas < 0) entradilla = sprintf(ptr, "Identificadores inválidos: ");
-	else entradilla = sprintf(ptr, "Asientos inválidos: ");
-	
-	ptr += entradilla;
-	*ptr++ = '{';
-	
-	for (int i = 0; i < n_reservas; i++) {
-		int numero = sprintf(ptr, "%d, ", reservas[i]);
-		ptr += numero;
-	}
-	
-	*(ptr - 2) = '}';
-	*(ptr - 1) = '\n';
+#define RESERVAS_INVALIDAS\
+	char* result = malloc(MAX_BUFFER_SIZE);\
+	if (!result) {CIERRA_ANULA(1, "Error en la alocación de memoria");}\
+	\
+	char* ptr = result;\
+	int entradilla;\
+	\
+	if (asientos_personas < 0) entradilla = sprintf(ptr, "Identificadores inválidos: ");\
+	else entradilla = sprintf(ptr, "Asientos inválidos: ");\
+	\
+	ptr += entradilla;\
+	*ptr++ = '{';\
+	int numero;\
+	\
+	for (int i = 0; i < n_asientos_invalidos; i++) {\
+		numero = sprintf(ptr, "%d, ", *(asientos_invalidos + i));\
+		ptr += numero;\
+	}\
+	\
+	*(ptr - 2) = '}';\
+	*(ptr - 1) = '\n';\
 	*ptr = '\0';
-	return result;
-}
+
 
 int main(int argc, char* argv[]) {
 
@@ -228,7 +227,10 @@ int main(int argc, char* argv[]) {
 		
 		if (n_asientos > 0 && guarda_estado_parcial_sala(dir, n_asientos, asientos) == -1) {CIERRA_ANULA(0, "Se produjo un error al guardar el estado de la sala\n");}
 		
-		if (n_asientos_invalidos > 0) {CIERRA_ANULA(0, reservas_invalidas(asientos_invalidos, n_asientos_invalidos, asientos_personas));}
+		if (n_asientos_invalidos > 0) {
+		RESERVAS_INVALIDAS;
+		CIERRA_ANULA(0, result);
+		}
 			
 		exit(0);
 	}
