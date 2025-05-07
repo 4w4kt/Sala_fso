@@ -7,7 +7,7 @@
 # define PROCESOSPRAC2_ARS_JMGF_SALA_H
 
 # ifndef DETALLES
-# define DETALLES 0
+# define DETALLES 1
 # endif
 
 /// Clase sala.c

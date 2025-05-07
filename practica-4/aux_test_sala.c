@@ -33,7 +33,7 @@ int estado_sala(char* titulo) {
  * @return número del asiento liberado, -1 en caso contrario
  */
 int levantarse(int id_persona) {
-    if (id_persona <= 0 || asientos_ocupados() == capacidad_sala()) {
+    if (id_persona <= 0 || asientos_libres() == capacidad_sala()) {
         if (DETALLES) printf("Ha ocurrido un error.\n");
         return -1;
     }
