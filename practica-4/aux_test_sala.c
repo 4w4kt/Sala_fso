@@ -60,7 +60,7 @@ int sentarse(int id_persona) {
     if (DETALLES) {
         if (result != -1) {
 
-            printf("Puede sentarse en el asiento %d\n", result);
+            printf("Puede sentarse en el asiento %d, %d\n", result, id_persona);
             return result;
         }
         printf("No se ha encontrado un asiento para usted, %d\n", id_persona);

@@ -13,11 +13,15 @@
 
 // reto 3: poner pausas largas para que se vea, mandar vídeo por sharepoint
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 
 void* mostrar_estado(void* arg) {
 	
 	while(capacidad_sala() > 0) {
+		pthread_mutex_lock(&mutex);
 		estado_sala("\n\nSala en mitad del proceso");
+		pthread_mutex_unlock(&mutex);
 		sleep(3);
 	}
 }
@@ -25,12 +29,16 @@ void* mostrar_estado(void* arg) {
 void* reserva_anula(void* arg) {
 	int id = *((int*) arg);
 	for(int i = 0; i < 3; i++) {
+		pthread_mutex_lock(&mutex);
 		sentarse(id);
+		pthread_mutex_unlock(&mutex);
 		pausa_aleatoria(5);
 	}
 
 	for(int i = 0; i < 3; i++) {
+		pthread_mutex_lock(&mutex);
 		levantarse(id);
+		pthread_mutex_unlock(&mutex);
 		pausa_aleatoria(5);
 	}
 }
@@ -71,7 +79,7 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < n_hilos; i++) {
 		pthread_join(hilos[i], NULL);
 	}
-	estado_sala("Estado final de la sala");
+	estado_sala("\n\nEstado final de la sala");
 	elimina_sala();
 	pthread_join(estado, NULL);
 	free(ids);
