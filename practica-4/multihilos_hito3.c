@@ -23,7 +23,7 @@ void* mostrar_estado(void* arg) {
 		pthread_mutex_lock(&mutex);
 		estado_sala("\n\nSala en mitad del proceso");
 		pthread_mutex_unlock(&mutex);
-		sleep(3);
+		sleep(5);
 	}
 }
 
@@ -37,7 +37,7 @@ void* reservar(void* arg) {
 			pthread_cond_wait(&cond_reservas, &mutex);
 		}
 
-		sentarse(id);
+		reserva_asiento(id);
 		pthread_cond_signal(&cond_liberaciones);
 		pthread_mutex_unlock(&mutex);
 		pausa_aleatoria(5);
@@ -54,7 +54,7 @@ void* liberar(void* arg) {
 			pthread_cond_wait(&cond_liberaciones, &mutex);
 		}
 
-		levantarse(id);
+		libera_cualquiera();
 		pthread_cond_signal(&cond_reservas);
 		pthread_mutex_unlock(&mutex);
 		pausa_aleatoria(5);
@@ -77,8 +77,8 @@ int main(int argc, char* argv[]) {
 	}
 	
 	pthread_t reserva[hilos_reserva], libera[hilos_libera], estado;
-	int* ids_reserva = (int*) malloc(hilos_reserva * sizeof(int));
-	int* ids_libera = (int*) malloc(hilos_libera * sizeof(int));
+	int* ids_reserva = malloc(hilos_reserva * sizeof(int));
+	int* ids_libera = malloc(hilos_reserva * sizeof(int));
 
 	crea_sala(CAPACIDAD);
 	

@@ -13,15 +13,11 @@
 
 // reto 3: poner pausas largas para que se vea, mandar vídeo por sharepoint
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
 
 void* mostrar_estado(void* arg) {
 	
 	while(capacidad_sala() > 0) {
-		pthread_mutex_lock(&mutex);
 		estado_sala("\n\nSala en mitad del proceso");
-		pthread_mutex_unlock(&mutex);
 		sleep(3);
 	}
 }
@@ -29,16 +25,12 @@ void* mostrar_estado(void* arg) {
 void* reserva_anula(void* arg) {
 	int id = *((int*) arg);
 	for(int i = 0; i < 3; i++) {
-		pthread_mutex_lock(&mutex);
 		sentarse(id);
-		pthread_mutex_unlock(&mutex);
 		pausa_aleatoria(5);
 	}
 
 	for(int i = 0; i < 3; i++) {
-		pthread_mutex_lock(&mutex);
 		levantarse(id);
-		pthread_mutex_unlock(&mutex);
 		pausa_aleatoria(5);
 	}
 }
@@ -58,13 +50,14 @@ int main(int argc, char* argv[]) {
 	}
 	
 	pthread_t hilos[n_hilos], estado;
-	int* ids = (int*) malloc(n_hilos * sizeof(int));
+	int* ids = malloc(n_hilos * sizeof(int));
 	crea_sala(CAPACIDAD);
 	
 	for (int i = 0; i < n_hilos; i++) {
 		*(ids + i) = i + 1;
 		if (pthread_create(&hilos[i], NULL, reserva_anula, ids+i) != 0) {
 			elimina_sala();
+			free(ids);
 			perror("Error en la creación de los hilos");
 			exit(1);
 		}
@@ -72,6 +65,7 @@ int main(int argc, char* argv[]) {
 	
 	if (pthread_create(&estado, NULL, mostrar_estado, NULL) != 0) {
 		elimina_sala();
+		free(ids);
 		perror("Error en la creación de los hilos");
 		exit(1);
 	}
@@ -79,7 +73,8 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < n_hilos; i++) {
 		pthread_join(hilos[i], NULL);
 	}
-	estado_sala("\n\nEstado final de la sala");
+	
+	estado_sala("Estado final de la sala");
 	elimina_sala();
 	pthread_join(estado, NULL);
 	free(ids);

@@ -44,6 +44,8 @@ extern int levantarse(int id_persona);
 
 extern int reserva_multiple(int	n_personas,	int* lista_id);
 
+extern int libera_cualquiera();
+
 /// Clase practica3
 
 extern int guarda_estado_sala(char* ruta_fichero);
