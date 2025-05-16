@@ -7,7 +7,7 @@
 # define PROCESOSPRAC2_ARS_JMGF_SALA_H
 
 # ifndef DETALLES
-# define DETALLES 1
+# define DETALLES 0
 # endif
 
 /// Clase sala.c
@@ -42,7 +42,7 @@ extern int sentarse(int id_persona);
 
 extern int levantarse(int id_persona);
 
-extern int reserva_multiple(int	n_personas,	int* lista_id);
+extern int reserva_multiple(int	n_personas, int* lista_id);
 
 extern int libera_cualquiera();
 

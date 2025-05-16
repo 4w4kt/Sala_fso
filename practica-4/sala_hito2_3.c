@@ -22,8 +22,6 @@ int cap_sala;
 int ocupados;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
-pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 
 /**
  * Reserva un asiento libre a una persona.
@@ -99,8 +97,9 @@ int asientos_ocupados() {
  * @return capacidad de la sala, -1 si hay un error
  */
 int capacidad_sala() {
+    pthread_mutex_lock(&mutex);
     if (sala == NULL) return(-1);
-    return(cap_sala);
+    RETURN(cap_sala);
 }
 
 
@@ -110,8 +109,8 @@ int capacidad_sala() {
  * @return capacidad de sala si se ha podido crear, -1 en caso de error
  */
 int crea_sala(int capacidad) {
-    pthread_mutex_lock(&mutex);
     elimina_sala();
+    pthread_mutex_lock(&mutex);
     if (capacidad <= 0) {RETURN(-1)};
     sala = calloc(capacidad, sizeof(int));
     if (sala == NULL) {RETURN(-1);}

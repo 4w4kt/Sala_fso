@@ -24,14 +24,15 @@ void* mostrar_estado(void* arg) {
 
 void* reserva_anula(void* arg) {
 	int id = *((int*) arg);
+	
 	for(int i = 0; i < 3; i++) {
-		sentarse(id);
-		pausa_aleatoria(5);
+		reserva_asiento(id);
+		pausa_aleatoria(2);
 	}
 
 	for(int i = 0; i < 3; i++) {
 		levantarse(id);
-		pausa_aleatoria(5);
+		pausa_aleatoria(2);
 	}
 }
 
@@ -50,7 +51,7 @@ int main(int argc, char* argv[]) {
 	}
 	
 	pthread_t hilos[n_hilos], estado;
-	int* ids = malloc(n_hilos * sizeof(int));
+	int* ids = (int*) malloc(n_hilos * sizeof(int));
 	crea_sala(CAPACIDAD);
 	
 	for (int i = 0; i < n_hilos; i++) {
