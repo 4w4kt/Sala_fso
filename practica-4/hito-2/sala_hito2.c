@@ -155,3 +155,97 @@ int estado_sala(char* titulo) {
 
     RETURN(0);
 }
+
+
+/**
+ * Libera un asiento ocupado por la persona pasado por parametro
+ * @param id_persona identificador de la persona que va a liberar el asiento
+ * @return número del asiento liberado, -1 en caso contrario
+ */
+int levantarse(int id_persona) {
+    pthread_mutex_lock(&mutex);
+    if (id_persona <= 0 || ocupados == 0) {
+        if (DETALLES) printf("Ha ocurrido un error.\n");
+        RETURN(-1);
+    }
+
+    for (int i = 0; i < cap_sala; i++) {
+        if (*(sala + i) == id_persona) {
+            *(sala + i) = 0;
+            ocupados--;
+
+            if (DETALLES) printf("%d se ha levantado del asiento %d\n", id_persona, i);
+            RETURN(i);
+        }
+    }
+    if (DETALLES) printf("No se ha encontrado %d en esta sala\n", id_persona);
+    RETURN(-1);
+}
+
+/**
+ * Encuentra un asiento para la persona pasada por parámetro
+ * @param id_persona identificador de la persona que va a ocupar el asiento
+ * @return el número de asiento donde se puede sentar, -1 en si no es posible asignarle un asiento
+ */
+int sentarse(int id_persona) {
+    int result = reserva_asiento(id_persona);
+    if (DETALLES) {
+        if (result != -1) {
+
+            printf("Puede sentarse en el asiento %d, %d\n", result, id_persona);
+            return result;
+        }
+        printf("No se ha encontrado un asiento para usted, %d\n", id_persona);
+        return result;
+    }
+    return result;
+
+}
+
+/**
+ * Reserva un asiento a cada persona pasada
+ * @param n_personas cantidad de personas en la lista
+ * @param lista_id lista de personas que desean un asiento
+ * @return el número de personas si se a encontrado asiento para todas, -1 en caso contrario
+ */
+
+int reserva_multiple(int n_personas, int* lista_id) {
+
+    pthread_mutex_lock(&mutex);
+
+    if (cap_sala < n_personas + ocupados || n_personas <= 0) {
+        if (DETALLES) puts("No se pudo realizar la reserva.");
+        RETURN(-1);
+    }
+
+    for (int i = 0; i < n_personas; i++) {
+        if (*(lista_id + i) <= 0) {
+            if (DETALLES) puts("No se pudo realizar la reserva."); 
+            RETURN(-1);
+        }
+    }
+
+    int asientos[n_personas];
+    int j = 0;
+
+    for (int i = 0; i < n_personas; i++) {
+        if (*(sala + i) == 0){
+            asientos[j] = i + 1;
+            *(sala + i) = *(lista_id + j);
+            ocupados++;
+            if (++j == n_personas) break;
+        }
+    }
+
+    pthread_mutex_unlock(&mutex);
+    
+    if (DETALLES){
+        printf("Los asientos reservados fueron {");
+        for (int i = 0; i<n_personas -1; i++){
+            printf("%d, ", asientos[i]);
+        }
+        printf("%d} \n", asientos[n_personas-1]);
+    }
+
+    return(n_personas);
+}
