@@ -16,7 +16,6 @@
 #define RETURN(x) pthread_mutex_unlock(&mutex); return x;
 
 
-
 int* sala = NULL;
 int cap_sala;
 int ocupados;
