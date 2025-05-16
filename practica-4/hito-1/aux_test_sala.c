@@ -94,10 +94,8 @@ int reserva_multiple(int n_personas, int* lista_id) {
     }
 
     int asientos[n_personas];
-    for (int i = 0; i < n_personas; i++){
-
-        asientos[i] = reserva_asiento(*(lista_id + i));
-    }
+    for (int i = 0; i < n_personas; i++) asientos[i] = reserva_asiento(*(lista_id + i));
+    
     if (DETALLES){
         printf("Los asientos reservados fueron {");
         for (int i = 0; i<n_personas -1; i++){

@@ -14,7 +14,6 @@
 
 // reto 3: poner pausas largas para que se vea, mandar vídeo por sharepoint
 
-pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 
@@ -32,7 +31,7 @@ void* reservar(void* arg) {
 
 		while (asientos_libres() == 0) {
 			printf("%d esperando para reservar...\n", id);
-			pthread_cond_wait(&cond_reservas, &main_mutex);
+			pthread_cond_wait(&cond_reservas, &mutex);
 		}
 
 		reserva_asiento(id);
@@ -47,7 +46,7 @@ void* liberar(void* arg) {
 
 		while (asientos_ocupados() == 0) {
 			printf("%d esperando para liberar...\n", id);
-			pthread_cond_wait(&cond_liberaciones, &main_mutex);
+			pthread_cond_wait(&cond_liberaciones, &mutex);
 		}
 
 		libera_cualquiera();

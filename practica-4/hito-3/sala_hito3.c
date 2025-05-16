@@ -13,12 +13,12 @@
 #include "macros.h"
 #include <stdlib.h>
 
-#define RETURN(x) pthread_mutex_unlock(&mutex); return x;
-
-
 int* sala = NULL;
 int cap_sala;
 int ocupados;
+
+pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 
 /**
  * Reserva un asiento libre a una persona.

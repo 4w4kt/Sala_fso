@@ -131,3 +131,6 @@
 		free(ids);\
 		perror(x);\
 		exit(1);\
+
+
+#define RETURN(x) pthread_mutex_unlock(&mutex); return x;
