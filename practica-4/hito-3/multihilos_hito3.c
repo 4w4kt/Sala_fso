@@ -12,10 +12,13 @@
 #define CAPACIDAD 10
 #endif
 
-// reto 3: poner pausas largas para que se vea, mandar vídeo por sharepoint
+extern pthread_mutex_t mutex;
+pthread_mutex_t end_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
+
+int n, m;
 
 void* mostrar_estado(void* arg) {
 	
@@ -29,31 +32,53 @@ void* reservar(void* arg) {
 	int id = *((int*) arg);
 	for(int i = 0; i < 3; i++) {
 
-		while (asientos_libres() == 0) {
+		while (reserva_asiento(id) == -1) {
+			pthread_lock_mutex(&end_mutex);
+			if (m == 0) {
+				pthread_unlock_mutex(&end_mutex);
+				return NULL;
+			}
+			pthread_unlock_mutex(&end_mutex);
+
 			printf("%d esperando para reservar...\n", id);
 			pthread_cond_wait(&cond_reservas, &mutex);
 		}
 
-		reserva_asiento(id);
 		pthread_cond_signal(&cond_liberaciones);
 		pausa_aleatoria(5);
 	}
+
+	pthread_lock_mutex(&end_mutex);
+	n--;
+	pthread_cond_broadcast(&cond_liberaciones);
+	pthread_unlock_mutex(&end_mutex);
 }
+
 
 void* liberar(void* arg) {
 	int id = *((int*) arg);
 	for(int i = 0; i < 3; i++) {
 
-		while (asientos_ocupados() == 0) {
+		while (libera_cualquiera() == -1) {
+			pthread_lock_mutex(&end_mutex);
+			if(n == 0) {
+				pthread_unlock_mutex(&end_mutex);
+				return NULL;
+			}
+			pthread_unlock_mutex(&end_mutex);
 			printf("%d esperando para liberar...\n", id);
 			pthread_cond_wait(&cond_liberaciones, &mutex);
 		}
 
-		libera_cualquiera();
 		pthread_cond_signal(&cond_reservas);
 		pausa_aleatoria(5);
 	}
+	pthread_lock_mutex(&end_mutex);
+	m--;
+	pthread_cond_broadcast(&cond_reservas);
+	pthread_unlock_mutex(&end_mutex);
 }
+
 
 int main(int argc, char* argv[]) {
 
@@ -64,6 +89,9 @@ int main(int argc, char* argv[]) {
 
 	int hilos_reserva = atoi(argv[1]);
 	int hilos_libera = atoi(argv[2]);
+
+	n = hilos_reserva;
+	m = hilos_libera;
 	
 	if (hilos_reserva <= 0 || hilos_libera <= 0) {
 		fprintf(stderr, "Los argumentos 2/3 deben ser enteros positivos. Introduzca \"multihilos n m\"\n");

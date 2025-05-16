@@ -17,8 +17,7 @@ int* sala = NULL;
 int cap_sala;
 int ocupados;
 
-pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
-pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
+extern pthread_mutex_t mutex;
 
 /**
  * Reserva un asiento libre a una persona.
@@ -133,112 +132,221 @@ int elimina_sala() {
 
 
 
+/* Para asegurarnos de que la API sea thread-safe, incluimos aquí las funciones de aux_test_sala que podrían generar inconsistencias */
 
-/* Adición de la práctica 3 */
+/**
+ * Muestra el estado de todos y cada uno de los asientos
+ * y una información resumen de la sala.
+ */
+int estado_sala(char* titulo) {
+	pthread_mutex_lock(&mutex);
+
+    if (sala == NULL) {
+        pthread_mutex_unlock(&mutex);
+        puts("La sala no existe.\n-------------------\n");
+        return(-1);
+    }
+
+    printf("%s\n", titulo);
+
+    printf("Estado de los asientos: {");
+
+    for (int i = 0; i < cap_sala - 1; i++) printf("%d, ", *(sala + i));
+    printf("%d} \n", *(sala + cap_sala - 1));
+
+    printf("- Asientos libres = %d \n- Asientos ocupados = %d \n- Capacidad de la sala = %d \n-------------------\n",
+           cap_sala - ocupados, ocupados, cap_sala);
+
+    RETURN(0);
+}
 
 
 /**
- * Libera la memoria asociada a la sala.
- * @return 0 si se elimina correctamente, -1 en caso de error
+ * Libera un asiento ocupado por la persona pasado por parametro
+ * @param id_persona identificador de la persona que va a liberar el asiento
+ * @return número del asiento liberado, -1 en caso contrario
  */
-int set_asiento(int id_asiento, int id_persona){
-    if (id_asiento > cap_sala || id_asiento <= 0 || id_persona < 0) return -1;
+int levantarse(int id_persona) {
+    pthread_mutex_lock(&mutex);
+    if (id_persona <= 0 || ocupados == 0) {
+        pthread_mutex_unlock(&mutex);
+        if (DETALLES) printf("Ha ocurrido un error.\n");
+        return(-1);
+    }
+
+    for (int i = 0; i < cap_sala; i++) {
+        if (*(sala + i) == id_persona) {
+            *(sala + i) = 0;
+            ocupados--;
+            pthread_cond_signal(&mutex);
+            if (DETALLES) printf("%d se ha levantado del asiento %d\n", id_persona, i);
+            return(i);
+        }
+    }
+    pthread_mutex_unlock(&mutex);
+    if (DETALLES) printf("No se ha encontrado %d en esta sala\n", id_persona);
+    return(-1);
+}
+
+
+/**
+ * Encuentra un asiento para la persona pasada por parámetro
+ * @param id_persona identificador de la persona que va a ocupar el asiento
+ * @return el número de asiento donde se puede sentar, -1 en si no es posible asignarle un asiento
+ */
+int sentarse(int id_persona) {
+    int result = reserva_asiento(id_persona);
+    if (DETALLES) {
+        if (result != -1) {
+
+            printf("Puede sentarse en el asiento %d, %d\n", result, id_persona);
+            return result;
+        }
+        printf("No se ha encontrado un asiento para usted, %d\n", id_persona);
+        return result;
+    }
+    return result;
+
+}
+
+/**
+ * Reserva un asiento a cada persona pasada
+ * @param n_personas cantidad de personas en la lista
+ * @param lista_id lista de personas que desean un asiento
+ * @return el número de personas si se a encontrado asiento para todas, -1 en caso contrario
+ */
+
+int reserva_multiple(int n_personas, int* lista_id) {
+
+    for (int i = 0; i < n_personas; i++) {
+        if (*(lista_id + i) <= 0) {
+            if (DETALLES) puts("No se pudo realizar la reserva."); 
+            return(-1);
+        }
+    }
+
+    pthread_mutex_lock(&mutex);
+
+    if (cap_sala < n_personas + ocupados || n_personas <= 0) {
+        pthread_mutex_unlock(&mutex);
+        if (DETALLES) puts("No se pudo realizar la reserva.");
+        return(-1);
+    }
+
+    int asientos[n_personas];
+    int j = 0;
+
+    for (int i = 0; i < n_personas; i++) {
+        if (*(sala + i) == 0){
+            asientos[j] = i + 1;
+            *(sala + i) = *(lista_id + j);
+            ocupados++;
+            if (++j == n_personas) break;
+        }
+    }
+
+    pthread_mutex_unlock(&mutex);
     
-    if(*(sala + id_asiento - 1) == 0 && id_persona > 0) ocupados++;
-    else if(*(sala + id_asiento - 1) != 0 && id_persona == 0) ocupados--;
-        
-    *(sala + id_asiento - 1) = id_persona;
-    return 0;
+    if (DETALLES){
+        printf("Los asientos reservados fueron {");
+        for (int i = 0; i<n_personas -1; i++){
+            printf("%d, ", asientos[i]);
+        }
+        printf("%d} \n", asientos[n_personas-1]);
+    }
+
+    return(n_personas);
 }
 
 
-int guarda_estado_sala(char* ruta_fichero){
-	if (sala == NULL) return -1;
-	if (access(ruta_fichero, W_OK) != 0 && errno == EACCES) return -1;
-	int mode = O_CREAT | O_WRONLY | O_TRUNC;
-	int fd = open(ruta_fichero, mode);
-	CHECK_ERROR(fd);
-	
-	ssize_t bytes_escritos = write(fd, &cap_sala, sizeof(int));
-	CHECK_ESCRITO(bytes_escritos);
-	bytes_escritos = write(fd, &ocupados, sizeof(int));
-	CHECK_ESCRITO(bytes_escritos); 
-	bytes_escritos = write(fd, sala, sizeof(int) * cap_sala);
-	CHECK_ESCRITO(bytes_escritos);
-	close(fd);
-	return 0;
+/**
+ * Encuentra un asiento para la persona pasada por parámetro
+ * @param id_persona identificador de la persona que va a ocupar el asiento
+ * @return el número de asiento donde se puede sentar, -1 en si no es posible asignarle un asiento
+ */
+int sentarse(int id_persona) {
+    int result = reserva_asiento(id_persona);
+    if (DETALLES) {
+        if (result != -1) {
+
+            printf("Puede sentarse en el asiento %d, %d\n", result, id_persona);
+            return result;
+        }
+        printf("No se ha encontrado un asiento para usted, %d\n", id_persona);
+        return result;
+    }
+    return result;
+
+}
+
+/**
+ * Reserva un asiento a cada persona pasada
+ * @param n_personas cantidad de personas en la lista
+ * @param lista_id lista de personas que desean un asiento
+ * @return el número de personas si se a encontrado asiento para todas, -1 en caso contrario
+ */
+
+int reserva_multiple(int n_personas, int* lista_id) {
+
+    pthread_mutex_lock(&mutex);
+
+    if (cap_sala < n_personas + ocupados || n_personas <= 0) {
+        if (DETALLES) puts("No se pudo realizar la reserva.");
+        RETURN(-1);
+    }
+
+    for (int i = 0; i < n_personas; i++) {
+        if (*(lista_id + i) <= 0) {
+            if (DETALLES) puts("No se pudo realizar la reserva."); 
+            RETURN(-1);
+        }
+    }
+
+    int asientos[n_personas];
+    int j = 0;
+
+    for (int i = 0; i < n_personas; i++) {
+        if (*(sala + i) == 0){
+            asientos[j] = i + 1;
+            *(sala + i) = *(lista_id + j);
+            ocupados++;
+            if (++j == n_personas) break;
+        }
+    }
+
+    pthread_mutex_unlock(&mutex);
+    
+    if (DETALLES){
+        printf("Los asientos reservados fueron {");
+        for (int i = 0; i<n_personas -1; i++){
+            printf("%d, ", asientos[i]);
+        }
+        printf("%d} \n", asientos[n_personas-1]);
+    }
+
+    return(n_personas);
 }
 
 
-int recupera_estado_sala(char* ruta_fichero){
-	if (sala == NULL) return -1;
-	if (access(ruta_fichero, R_OK) != 0 && errno == EACCES) return -1;
-	int fd = open(ruta_fichero, O_RDONLY);
-	CHECK_ERROR(fd);
-	SELECT_DATOS_SALA(fd, 1);
-	ocupados = datos_sala[1];
-	bytes_leidos = read(fd, sala, sizeof(int)* cap_sala);
-	CHECK_LEIDO(bytes_leidos);
-	close(fd);
-}
 
+int libera_cualquiera() {
+    pthread_mutex_lock(&mutex);
 
-int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
-	if (sala == NULL) return -1;
-	if (num_asientos <= 0 || id_asientos == NULL) return -1;
-	
-	int fd = open(ruta_fichero, O_RDWR);
-	CHECK_ERROR(fd);
-	SELECT_DATOS_SALA(fd, 1);
-
-	int estado_asiento_antiguo, estado;
-	int asientos_ocupados = datos_sala[1];
-	ssize_t bytes_escritos;
-
-	for(int i = 0; i < num_asientos; i++){
-		lseek(fd, sizeof(int)* (id_asientos[i] + 1), SEEK_SET);
-		bytes_leidos = read(fd, &estado_asiento_antiguo, sizeof(int));
-		CHECK_LEIDO(bytes_leidos);
-
-		lseek(fd, sizeof(int)* (id_asientos[i] + 1), SEEK_SET);
-		estado = *(sala + id_asientos[i] - 1);
-		bytes_escritos = write(fd, &estado, sizeof(int));
-		CHECK_ESCRITO(bytes_escritos);
-		if(estado_asiento_antiguo == 0 && estado != 0){
-			asientos_ocupados++;
-			continue;
-		}
-		if(estado_asiento_antiguo != 0 && estado == 0){
-			asientos_ocupados--;
-		}
+	if (sala == NULL || ocupados == 0)  {
+        pthread_mutex_unlock(&mutex);
+		puts("No hay asientos que liberar.");
+		return -1;
 	}
 	
-	lseek(fd, sizeof(int), SEEK_SET);
-	bytes_escritos = write(fd, &asientos_ocupados, sizeof(int));
-	CHECK_ESCRITO(bytes_escritos);
-	close(fd);
-	return 0;
-}
+	for (int i = 0; i < cap_sala; i++) {
+		
+        if (*(sala + i) != 0) {
+			*(sala + i) = 0;
+            ocupados--;
 
-int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos){
-
-	if (sala == NULL) return -1;
-	if (num_asientos <= 0 || id_asientos == NULL) return -1;
-
-	int fd = open(ruta_fichero, O_RDONLY);
-	CHECK_ERROR(fd);
-	SELECT_DATOS_SALA(fd, 1);
-	
-	int estado_asiento_antiguo;
-	for(int i = 0; i < num_asientos; i++){
-		lseek(fd, sizeof(int)* (id_asientos[i] + 1), SEEK_SET);
-		ssize_t bytes_leidos = read(fd, &estado_asiento_antiguo, sizeof(int));
-		CHECK_LEIDO(bytes_leidos);
-		if(bytes_leidos == 0) continue;
-		set_asiento(id_asientos[i], estado_asiento_antiguo);
+            pthread_mutex_unlock(&mutex);
+			printf("Liberado asiento %d.\n", n_asiento);
+		    return n_asiento;
+		}
 	}
-	lseek(fd, sizeof(int), SEEK_SET);
-	close(fd);
-	return 0;
 }
-

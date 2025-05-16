@@ -109,22 +109,3 @@ int reserva_multiple(int n_personas, int* lista_id) {
 }
 
 
-int libera_cualquiera() {
-	if (capacidad_sala() == -1 || asientos_libres() == capacidad_sala()) {
-		puts("No hay asientos que liberar.");
-		return -1;
-	}
-	
-	int n_asiento;
-	
-	for (int i = 1; i <= capacidad_sala(); i++) {
-		
-		n_asiento = libera_asiento(i);
-		
-		if (n_asiento != -1) {
-			printf("Liberado asiento %d.\n", n_asiento);
-			return n_asiento;
-		}
-	}
-}
-
