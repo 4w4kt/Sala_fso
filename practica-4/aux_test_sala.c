@@ -121,9 +121,12 @@ int libera_cualquiera() {
 	
 	for (int i = 1; i <= capacidad_sala(); i++) {
 		
+		n_asiento = libera_asiento(i);
+		
 		if (n_asiento != -1) {
 			printf("Liberado asiento %d.\n", n_asiento);
 			return n_asiento;
 		}
 	}
 }
+
