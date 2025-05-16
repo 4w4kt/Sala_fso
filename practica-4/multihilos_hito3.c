@@ -5,6 +5,7 @@
 #include <errno.h>
 
 #include "sala.h"
+#include "macros.h"
 #include "hilos/retardo.h"
 
 #ifndef CAPACIDAD
@@ -13,16 +14,14 @@
 
 // reto 3: poner pausas largas para que se vea, mandar vídeo por sharepoint
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 
 void* mostrar_estado(void* arg) {
 	
 	while(capacidad_sala() > 0) {
-		pthread_mutex_lock(&mutex);
 		estado_sala("\n\nSala en mitad del proceso");
-		pthread_mutex_unlock(&mutex);
 		sleep(5);
 	}
 }
@@ -30,16 +29,14 @@ void* mostrar_estado(void* arg) {
 void* reservar(void* arg) {
 	int id = *((int*) arg);
 	for(int i = 0; i < 3; i++) {
-		pthread_mutex_lock(&mutex);
 
 		while (asientos_libres() == 0) {
 			printf("%d esperando para reservar...\n", id);
-			pthread_cond_wait(&cond_reservas, &mutex);
+			pthread_cond_wait(&cond_reservas, &main_mutex);
 		}
 
 		reserva_asiento(id);
 		pthread_cond_signal(&cond_liberaciones);
-		pthread_mutex_unlock(&mutex);
 		pausa_aleatoria(5);
 	}
 }
@@ -47,16 +44,14 @@ void* reservar(void* arg) {
 void* liberar(void* arg) {
 	int id = *((int*) arg);
 	for(int i = 0; i < 3; i++) {
-		pthread_mutex_lock(&mutex);
 
 		while (asientos_ocupados() == 0) {
 			printf("%d esperando para liberar...\n", id);
-			pthread_cond_wait(&cond_liberaciones, &mutex);
+			pthread_cond_wait(&cond_liberaciones, &main_mutex);
 		}
 
 		libera_cualquiera();
 		pthread_cond_signal(&cond_reservas);
-		pthread_mutex_unlock(&mutex);
 		pausa_aleatoria(5);
 	}
 }

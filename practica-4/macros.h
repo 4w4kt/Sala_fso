@@ -124,3 +124,10 @@
                 else fprintf(stderr, mensaje);\
                 exit(1);
 
+// control de hilos
+
+#define CHECK_HILOS(x) \
+		elimina_sala(); \
+		free(ids);\
+		perror(x);\
+		exit(1);\

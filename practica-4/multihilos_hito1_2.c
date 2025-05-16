@@ -5,17 +5,19 @@
 #include <errno.h>
 
 #include "sala.h"
+#include "macros.h"
 #include "hilos/retardo.h"
 
 #ifndef CAPACIDAD
 #define CAPACIDAD 10
 #endif
 
+
 // reto 3: poner pausas largas para que se vea, mandar vídeo por sharepoint
 
 
 void* mostrar_estado(void* arg) {
-	
+
 	while(capacidad_sala() > 0) {
 		estado_sala("\n\nSala en mitad del proceso");
 		sleep(3);
@@ -57,18 +59,12 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < n_hilos; i++) {
 		*(ids + i) = i + 1;
 		if (pthread_create(&hilos[i], NULL, reserva_anula, ids+i) != 0) {
-			elimina_sala();
-			free(ids);
-			perror("Error en la creación de los hilos");
-			exit(1);
+			CHECK_HILOS("Error en la creación de los hilos");
 		}
 	}
 	
 	if (pthread_create(&estado, NULL, mostrar_estado, NULL) != 0) {
-		elimina_sala();
-		free(ids);
-		perror("Error en la creación de los hilos");
-		exit(1);
+		CHECK_HILOS("Error en la creación del hilo de estado");
 	}
 	
 	for (int i = 0; i < n_hilos; i++) {

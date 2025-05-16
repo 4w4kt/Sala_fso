@@ -20,8 +20,6 @@ int* sala = NULL;
 int cap_sala;
 int ocupados;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
 /**
  * Reserva un asiento libre a una persona.
  * @param id_persona identificador de la persona que reserva el asiento
