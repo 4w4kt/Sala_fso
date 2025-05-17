@@ -25,13 +25,13 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
  * @return número de asiento si hay un asiento libre, -1 en cualquier otro caso
  */
 int reserva_asiento(int id_persona) {
-    pthread_mutex_lock(&mutex);
+    if (pthread_mutex_trylock(&mutex) != 0) return -1;
+    
     if (id_persona <= 0 || ocupados == cap_sala) {RETURN(-1);}
     for (int i = 0; i < cap_sala; i++) {
         if (*(sala+i) == 0) {
             *(sala+i) = id_persona;
             ocupados++;
-            printf("reservado, ocupados = %d\n", ocupados);
             pthread_mutex_unlock(&mutex);
             return(i + 1);
         }
@@ -175,7 +175,7 @@ int levantarse(int id_persona) {
         if (DETALLES) printf("Ha ocurrido un error.\n");
         return(-1);
     }
-
+    
     for (int i = 0; i < cap_sala; i++) {
         if (*(sala + i) == id_persona) {
             *(sala + i) = 0;
@@ -215,7 +215,7 @@ int sentarse(int id_persona) {
  * Reserva un asiento a cada persona pasada
  * @param n_personas cantidad de personas en la lista
  * @param lista_id lista de personas que desean un asiento
- * @return el número de personas si se a encontrado asiento para todas, -1 en caso contrario
+ * @return el número de personas si se ha encontrado asiento para todas, -1 en caso contrario
  */
 
 int reserva_multiple(int n_personas, int* lista_id) {
@@ -261,19 +261,19 @@ int reserva_multiple(int n_personas, int* lista_id) {
 }    
   
 int libera_cualquiera() {
-    pthread_mutex_lock(&mutex);
+    if (pthread_mutex_trylock(&mutex) != 0) return -1;
+    
     if (ocupados == 0) {
               pthread_mutex_unlock(&mutex);
               if (DETALLES) puts("No hay asientos que liberar.");
               return -1;
       }
 
-      for (int i = 0; i < cap_sala; i++) {//podemos poner un conteo del ultimo reservado y liberado y nos ahorramos el for para liberar y reservar
+      for (int i = 0; i < cap_sala; i++) {
               if (*(sala + i) != 0) {
               *(sala + i) = 0;
               ocupados--;
 
-              printf("Liberado asiento %d.ocupados = %d\n", i + 1, ocupados);
               pthread_mutex_unlock(&mutex);
               return i + 1;
         }

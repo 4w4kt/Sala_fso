@@ -12,7 +12,7 @@
 #define CAPACIDAD 10
 #endif
 
-pthread_mutex_t end_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
@@ -21,64 +21,75 @@ int n, m;
 
 void* mostrar_estado(void* arg) {
 	
-	while(capacidad_sala() > 0) {
+	while(n > 0 || m > 0) {
 		estado_sala("\n\nSala en mitad del proceso");
-		sleep(5);
+		sleep(2);
 	}
 }
 
 void* reservar(void* arg) {
 	int id = *((int*) arg);
+	
 	for(int i = 0; i < 3; i++) {
+		pthread_mutex_lock(&main_mutex);
 
 		while (reserva_asiento(id) == -1) {
-			pthread_mutex_lock(&end_mutex);
 			if (m == 0) {
-				pthread_mutex_unlock(&end_mutex);
+			        printf("No hay más hilos que liberan. Abortando hilo reservar %d.\n", id);
+			        n--;
+				pthread_mutex_unlock(&main_mutex);
 				return NULL;
 			}
-			printf("%d esperando para reservar...\n", id); //deberíamos bajar el mutex
 			
-			pthread_mutex_unlock(&end_mutex);
-			pthread_cond_wait(&cond_reservas, &mutex);
+			printf("Hilo %d esperando para reservar...\n", id);
+			pthread_mutex_unlock(&main_mutex);
+			pthread_cond_wait(&cond_reservas, &main_mutex);
+			
 		}
 
-                //puts("Se ha reservado...");
 		pthread_cond_broadcast(&cond_liberaciones);
+		pthread_mutex_unlock(&main_mutex);
 		pausa_aleatoria(5);
 	}
 
-	pthread_mutex_lock(&end_mutex);
+	pthread_mutex_lock(&main_mutex);
 	n--;
 	pthread_cond_broadcast(&cond_liberaciones);
-	pthread_mutex_unlock(&end_mutex);
+	pthread_mutex_unlock(&main_mutex);
+	
+	printf("Hilo reserva %d ha terminado sus tareas.\n", id);
 }
 
 
 void* liberar(void* arg) {
 	int id = *((int*) arg);
+	
 	for(int i = 0; i < 3; i++) {
-
+	        pthread_mutex_lock(&main_mutex);
+	        
 		while (libera_cualquiera() == -1) {
-			pthread_mutex_lock(&end_mutex);
 			if(n == 0) {
-				pthread_mutex_unlock(&end_mutex);
+			        printf("No hay más hilos que reservan. Abortando hilo liberar %d.\n", id);
+			        m--;
+				pthread_mutex_unlock(&main_mutex);
 				return NULL;
 			}
 			
-			printf("%d esperando para liberar...\n", id); //puede darse el caso de que, en lo que se printea la notificación del ultimo que liber no llegue a este hio y se queda esperando eternamente, solucion quitar el printf, o printear con dentro de la seccion crítica para que nadie pueda modificar en lo que tu estaás printando                        
-			pthread_mutex_unlock(&end_mutex);
-
-			pthread_cond_wait(&cond_liberaciones, &mutex);
+			printf("Hilo %d esperando para liberar...\n", id);
+			pthread_mutex_unlock(&main_mutex);
+			
+			pthread_cond_wait(&cond_liberaciones, &main_mutex);
 		}
 
 		pthread_cond_broadcast(&cond_reservas);
+		pthread_mutex_unlock(&main_mutex);
 		pausa_aleatoria(5);
 	}
-	pthread_mutex_lock(&end_mutex);
+	pthread_mutex_lock(&main_mutex);
 	m--;
 	pthread_cond_broadcast(&cond_reservas);
-	pthread_mutex_unlock(&end_mutex);
+	pthread_mutex_unlock(&main_mutex);
+	printf("Hilo libera %d ha terminado sus tareas.\n", id);
 }
 
 int main(int argc, char* argv[]) {
@@ -93,6 +104,8 @@ int main(int argc, char* argv[]) {
 
 	n = hilos_reserva;
 	m = hilos_libera;
+	
+        printf("Inicio: n = %d, m = %d\n", n, m);
 	
 	if (hilos_reserva <= 0 || hilos_libera <= 0) {
 		fprintf(stderr, "Los argumentos 2/3 deben ser enteros positivos. Introduzca \"multihilos n m\"\n");
@@ -126,6 +139,8 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 	}
+	
+	puts("Hilo estado no existe");
 
 	if (pthread_create(&estado, NULL, mostrar_estado, NULL) != 0) {
 		elimina_sala();
@@ -134,6 +149,8 @@ int main(int argc, char* argv[]) {
 		perror("Error en la creación de los hilos");
 		exit(1);
 	}
+	
+	puts("Hilo estado existe");
 	
 	for (int i = 0; i < hilos_reserva; i++) {
 		pthread_join(reserva[i], NULL);
