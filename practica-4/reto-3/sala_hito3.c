@@ -269,7 +269,7 @@ int libera_cualquiera() {
               return -1;
       }
 
-      for (int i = 0; i < cap_sala; i++) {//podemos poner un conteo del ultimo reservado y liberado y nos ahorramos el for para liberar y reservar
+      for (int i = 0; i < cap_sala; i++) { //podemos poner un conteo del ultimo reservado y liberado y nos ahorramos el for para liberar y reservar
               if (*(sala + i) != 0) {
               *(sala + i) = 0;
               ocupados--;
@@ -280,3 +280,5 @@ int libera_cualquiera() {
         }
     }
 }
+
+

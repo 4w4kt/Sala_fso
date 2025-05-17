@@ -18,7 +18,7 @@ pthread_mutex_t end_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 
-int n, m;
+int n_max, n, m;
 
 void* mostrar_estado(void* arg) {
 	
@@ -38,9 +38,9 @@ void* reservar(void* arg) {
 				pthread_mutex_unlock(&end_mutex);
 				return NULL;
 			}
-			pthread_mutex_unlock(&end_mutex);
+			pthread_mutex_unlock(&end_mutex); //deberíamos bajar el mutex
 
-			printf("%d esperando para reservar...\n", id); //deberíamos bajar el mutex
+			printf("%d esperando para reservar...\n", id);
 			pthread_cond_wait(&cond_reservas, &mutex);
 		}
 
@@ -68,7 +68,6 @@ void* liberar(void* arg) {
 			}
 			pthread_mutex_unlock(&end_mutex);
 			printf("%d esperando para liberar...\n", id); //puede darse el caso de que, en lo que se printea la notificación del ultimo que liber no llegue a este hio y se queda esperando eternamente, solucion quitar el printf, o printear con dentro de la seccion crítica para que nadie pueda modificar en lo que tu estaás printando
-
 			pthread_cond_wait(&cond_liberaciones, &mutex);
 		}
 
@@ -84,19 +83,20 @@ void* liberar(void* arg) {
 
 int main(int argc, char* argv[]) {
 
-	if (argc != 3) {
-		fprintf(stderr, "Número de argumentos incorrecto. Introduzca \"multihilos n m\"\n");
+	if (argc != 4) {
+		fprintf(stderr, "Número de argumentos incorrecto. Introduzca \"multihilos maximo_de_hilos_por_grupo nhilos_reservas nhilos_liberaciones\"\n");
 		exit(1);
 	}
 
-	int hilos_reserva = atoi(argv[1]);
-	int hilos_libera = atoi(argv[2]);
+	n_max = atoi(argv[1]);
+	int hilos_reserva = atoi(argv[2]);
+	int hilos_libera = atoi(argv[3]);
 
 	n = hilos_reserva;
 	m = hilos_libera;
 	
-	if (hilos_reserva <= 0 || hilos_libera <= 0) {
-		fprintf(stderr, "Los argumentos 2/3 deben ser enteros positivos. Introduzca \"multihilos n m\"\n");
+	if (hilos_reserva <= 0 || hilos_libera <= 0 || n_max <= 0) {
+		fprintf(stderr, "Los argumentos deben ser enteros positivos. Introduzca \"multihilos maximo_de_hilos_por_grupo nhilos_reservas nhilos_liberaciones\"\n");
 		exit(1);
 	}
 	
@@ -152,3 +152,5 @@ int main(int argc, char* argv[]) {
 	free(ids_libera);
 	exit(0);
 }
+
+void join_reserva
