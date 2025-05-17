@@ -9,7 +9,7 @@
 #include "hilos/retardo.h"
 
 #ifndef CAPACIDAD
-#define CAPACIDAD 10
+#define CAPACIDAD 20
 #endif
 
 pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -23,7 +23,7 @@ void* mostrar_estado(void* arg) {
 	
 	while(n > 0 || m > 0) {
 		estado_sala("\n\nSala en mitad del proceso");
-		sleep(2);
+		sleep(5);
 	}
 }
 
@@ -49,7 +49,7 @@ void* reservar(void* arg) {
 
 		pthread_cond_broadcast(&cond_liberaciones);
 		pthread_mutex_unlock(&main_mutex);
-		pausa_aleatoria(5);
+		pausa_aleatoria(8);
 	}
 
 	pthread_mutex_lock(&main_mutex);
@@ -83,7 +83,7 @@ void* liberar(void* arg) {
 
 		pthread_cond_broadcast(&cond_reservas);
 		pthread_mutex_unlock(&main_mutex);
-		pausa_aleatoria(5);
+		pausa_aleatoria(8);
 	}
 	pthread_mutex_lock(&main_mutex);
 	m--;
@@ -104,8 +104,6 @@ int main(int argc, char* argv[]) {
 
 	n = hilos_reserva;
 	m = hilos_libera;
-	
-        printf("Inicio: n = %d, m = %d\n", n, m);
 	
 	if (hilos_reserva <= 0 || hilos_libera <= 0) {
 		fprintf(stderr, "Los argumentos 2/3 deben ser enteros positivos. Introduzca \"multihilos n m\"\n");
@@ -139,8 +137,6 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 	}
-	
-	puts("Hilo estado no existe");
 
 	if (pthread_create(&estado, NULL, mostrar_estado, NULL) != 0) {
 		elimina_sala();
@@ -149,8 +145,6 @@ int main(int argc, char* argv[]) {
 		perror("Error en la creación de los hilos");
 		exit(1);
 	}
-	
-	puts("Hilo estado existe");
 	
 	for (int i = 0; i < hilos_reserva; i++) {
 		pthread_join(reserva[i], NULL);
