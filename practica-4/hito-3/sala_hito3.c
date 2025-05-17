@@ -31,8 +31,8 @@ int reserva_asiento(int id_persona) {
         if (*(sala+i) == 0) {
             *(sala+i) = id_persona;
             ocupados++;
-            pthread_mutex_unlock(&mutex);
             printf("reservado, ocupados = %d\n", ocupados);
+            pthread_mutex_unlock(&mutex);
             return(i + 1);
         }
     }
@@ -258,12 +258,11 @@ int reserva_multiple(int n_personas, int* lista_id) {
     }
 
     return(n_personas);
-}
-
+}    
+  
 int libera_cualquiera() {
-      pthread_mutex_lock(&mutex);
-
-      if (sala == NULL || ocupados == 0)  {
+    pthread_mutex_lock(&mutex);
+    if (ocupados == 0) {
               pthread_mutex_unlock(&mutex);
               if (DETALLES) puts("No hay asientos que liberar.");
               return -1;
@@ -274,8 +273,8 @@ int libera_cualquiera() {
               *(sala + i) = 0;
               ocupados--;
 
-              pthread_mutex_unlock(&mutex);
               printf("Liberado asiento %d.ocupados = %d\n", i + 1, ocupados);
+              pthread_mutex_unlock(&mutex);
               return i + 1;
         }
     }

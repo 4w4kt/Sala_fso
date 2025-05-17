@@ -12,7 +12,6 @@
 #define CAPACIDAD 10
 #endif
 
-extern pthread_mutex_t mutex;
 pthread_mutex_t end_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
@@ -38,13 +37,13 @@ void* reservar(void* arg) {
 				pthread_mutex_unlock(&end_mutex);
 				return NULL;
 			}
-			pthread_mutex_unlock(&end_mutex);
-
 			printf("%d esperando para reservar...\n", id); //deberíamos bajar el mutex
+			
+			pthread_mutex_unlock(&end_mutex);
 			pthread_cond_wait(&cond_reservas, &mutex);
 		}
 
-                puts("Se ha reservado...");
+                //puts("Se ha reservado...");
 		pthread_cond_broadcast(&cond_liberaciones);
 		pausa_aleatoria(5);
 	}
@@ -66,8 +65,9 @@ void* liberar(void* arg) {
 				pthread_mutex_unlock(&end_mutex);
 				return NULL;
 			}
+			
+			printf("%d esperando para liberar...\n", id); //puede darse el caso de que, en lo que se printea la notificación del ultimo que liber no llegue a este hio y se queda esperando eternamente, solucion quitar el printf, o printear con dentro de la seccion crítica para que nadie pueda modificar en lo que tu estaás printando                        
 			pthread_mutex_unlock(&end_mutex);
-			printf("%d esperando para liberar...\n", id); //puede darse el caso de que, en lo que se printea la notificación del ultimo que liber no llegue a este hio y se queda esperando eternamente, solucion quitar el printf, o printear con dentro de la seccion crítica para que nadie pueda modificar en lo que tu estaás printando
 
 			pthread_cond_wait(&cond_liberaciones, &mutex);
 		}
@@ -80,7 +80,6 @@ void* liberar(void* arg) {
 	pthread_cond_broadcast(&cond_reservas);
 	pthread_mutex_unlock(&end_mutex);
 }
-
 
 int main(int argc, char* argv[]) {
 
