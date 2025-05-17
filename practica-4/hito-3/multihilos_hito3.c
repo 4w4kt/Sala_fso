@@ -33,25 +33,26 @@ void* reservar(void* arg) {
 	for(int i = 0; i < 3; i++) {
 
 		while (reserva_asiento(id) == -1) {
-			pthread_lock_mutex(&end_mutex);
+			pthread_mutex_lock(&end_mutex);
 			if (m == 0) {
-				pthread_unlock_mutex(&end_mutex);
+				pthread_mutex_unlock(&end_mutex);
 				return NULL;
 			}
-			pthread_unlock_mutex(&end_mutex);
+			pthread_mutex_unlock(&end_mutex);
 
 			printf("%d esperando para reservar...\n", id);
 			pthread_cond_wait(&cond_reservas, &mutex);
 		}
 
-		pthread_cond_signal(&cond_liberaciones);
+                puts("Se ha reservado...");
+		pthread_cond_broadcast(&cond_liberaciones);
 		pausa_aleatoria(5);
 	}
 
-	pthread_lock_mutex(&end_mutex);
+	pthread_mutex_lock(&end_mutex);
 	n--;
 	pthread_cond_broadcast(&cond_liberaciones);
-	pthread_unlock_mutex(&end_mutex);
+	pthread_mutex_unlock(&end_mutex);
 }
 
 
@@ -60,23 +61,23 @@ void* liberar(void* arg) {
 	for(int i = 0; i < 3; i++) {
 
 		while (libera_cualquiera() == -1) {
-			pthread_lock_mutex(&end_mutex);
+			pthread_mutex_lock(&end_mutex);
 			if(n == 0) {
-				pthread_unlock_mutex(&end_mutex);
+				pthread_mutex_unlock(&end_mutex);
 				return NULL;
 			}
-			pthread_unlock_mutex(&end_mutex);
+			pthread_mutex_unlock(&end_mutex);
 			printf("%d esperando para liberar...\n", id);
 			pthread_cond_wait(&cond_liberaciones, &mutex);
 		}
 
-		pthread_cond_signal(&cond_reservas);
+		pthread_cond_broadcast(&cond_reservas);
 		pausa_aleatoria(5);
 	}
-	pthread_lock_mutex(&end_mutex);
+	pthread_mutex_lock(&end_mutex);
 	m--;
 	pthread_cond_broadcast(&cond_reservas);
-	pthread_unlock_mutex(&end_mutex);
+	pthread_mutex_unlock(&end_mutex);
 }
 
 

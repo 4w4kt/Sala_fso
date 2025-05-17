@@ -179,7 +179,7 @@ int levantarse(int id_persona) {
         if (*(sala + i) == id_persona) {
             *(sala + i) = 0;
             ocupados--;
-            pthread_cond_signal(&mutex);
+            pthread_mutex_unlock(&mutex);
             if (DETALLES) printf("%d se ha levantado del asiento %d\n", id_persona, i);
             return(i);
         }
