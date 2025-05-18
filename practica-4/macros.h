@@ -134,3 +134,10 @@
 
 
 #define RETURN(x) pthread_mutex_unlock(&mutex); return x;
+
+#define ERROR_HILOS(x) \
+			elimina_sala();\
+			free(ids_reserva);\
+			free(ids_libera);\
+			perror(x);\
+			exit(1);

@@ -17,10 +17,9 @@ pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 
-int n, m;
+int n, m, N_grupo;
 
 void* mostrar_estado(void* arg) {
-	
 	while(n > 0 || m > 0) {
 		estado_sala("\n\nSala en mitad del proceso");
 		sleep(5);
@@ -94,63 +93,62 @@ void* liberar(void* arg) {
 
 int main(int argc, char* argv[]) {
 
-	if (argc != 3) {
+	if (argc != 4) {
 		fprintf(stderr, "Número de argumentos incorrecto. Introduzca \"multihilos n m\"\n");
 		exit(1);
 	}
 
-	int hilos_reserva = atoi(argv[1]);
-	int hilos_libera = atoi(argv[2]);
-
+	int hilos_libera= atoi(argv[2]);
+	int hilos_reserva = atoi(argv[3]);
+	
 	n = hilos_reserva;
 	m = hilos_libera;
 	
-	if (hilos_reserva <= 0 || hilos_libera <= 0) {
+	if (hilos_reserva <= 0 || hilos_libera <= 0 || N_grupo <= 0) {
 		fprintf(stderr, "Los argumentos 2/3 deben ser enteros positivos. Introduzca \"multihilos n m\"\n");
 		exit(1);
 	}
+
+
 	
+
 	pthread_t reserva[hilos_reserva], libera[hilos_libera], estado;
 	int* ids_reserva = malloc(hilos_reserva * sizeof(int));
 	int* ids_libera = malloc(hilos_reserva * sizeof(int));
 
 	crea_sala(CAPACIDAD);
 	
-	for (int i = 0; i < hilos_reserva; i++) {
-		*(ids_reserva + i) = i + 1;
-		if (pthread_create(&reserva[i], NULL, reservar, &ids_reserva[i]) != 0) {
-			elimina_sala();
-			free(ids_reserva);
-			free(ids_libera);
-			perror("Error en la creación de los hilos");
-			exit(1);
-		}
-	}
-	
-	for (int i = 0; i < hilos_libera; i++) {
-		*(ids_libera + i) = i + 1;
-		if (pthread_create(&libera[i], NULL, liberar, &ids_libera[i]) != 0) {
-			elimina_sala();
-			free(ids_reserva);
-			free(ids_libera);
-			perror("Error en la creación de los hilos");
-			exit(1);
-		}
+	if (pthread_create(&estado, NULL, mostrar_estado, NULL) != 0) {
+		ERROR_HILOS("Error en la creación del hilo mostrar estado");
 	}
 
-	if (pthread_create(&estado, NULL, mostrar_estado, NULL) != 0) {
-		elimina_sala();
-		free(ids_reserva);
-		free(ids_libera);
-		perror("Error en la creación de los hilos");
-		exit(1);
-	}
-	
-	for (int i = 0; i < hilos_reserva; i++) {
-		pthread_join(reserva[i], NULL);
-	}
-	for (int i = 0; i < hilos_libera; i++) {
-		pthread_join(libera[i], NULL);
+	while (n > 0 || m > 0) {
+		int ni = 0;
+		int mi = 0;
+
+		for (int i = 0; i < N_grupo && ; i++) {
+			*(ids_reserva + ni + i) = ni + i + 1;
+			if (pthread_create(&reserva[i], NULL, reservar, &ids_reserva[i]) != 0) {
+				ERROR_HILOS("Error en la creación de los hilos (reserva)");
+			}
+		}
+		
+		for (int i = 0; i < N_grupo; i++) {
+			*(ids_libera + mi + i) = i + 1;
+			if (pthread_create(&libera[i], NULL, liberar, &ids_libera[i]) != 0) {
+				ERROR_HILOS("Error en la creación de los hilos (libera)");
+			}
+		}
+
+		
+		for (int i = 0; i < hilos_reserva; i++) {
+			pthread_join(reserva[i], NULL);
+			ni++;
+		}
+		for (int i = 0; i < hilos_libera; i++) {
+			pthread_join(libera[i], NULL);
+			mi++;
+		}
 	}
 
 	estado_sala("\n\nEstado final de la sala");
