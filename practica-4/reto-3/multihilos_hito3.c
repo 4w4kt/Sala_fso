@@ -101,9 +101,6 @@ int main(int argc, char* argv[]) {
 	int hilos_libera= atoi(argv[2]);
 	int hilos_reserva = atoi(argv[3]);
 	
-	n = hilos_reserva;
-	m = hilos_libera;
-	
 	if (hilos_reserva <= 0 || hilos_libera <= 0 || N_grupo <= 0) {
 		fprintf(stderr, "Los argumentos 2/3 deben ser enteros positivos. Introduzca \"multihilos n m\"\n");
 		exit(1);
@@ -122,33 +119,40 @@ int main(int argc, char* argv[]) {
 		ERROR_HILOS("Error en la creación del hilo mostrar estado");
 	}
 
-	while (n > 0 || m > 0) {
-		int ni = 0;
-		int mi = 0;
+	int ni = hilos_reserva;
+	int mi = hilos_libera;
 
-		for (int i = 0; i < N_grupo && ; i++) {
-			*(ids_reserva + ni + i) = ni + i + 1;
-			if (pthread_create(&reserva[i], NULL, reservar, &ids_reserva[i]) != 0) {
+	int res, lib;
+
+	while (ni > 0 || mi > 0) {
+
+		pthread_mutex_lock(&main_mutex);
+		res = 0;
+		lib = 0;
+
+		for (int i = 0; i < N_grupo && ni > 0; i++) {
+			*(ids_reserva + hilos_reserva - ni) = hilos_reserva - ni + 1;
+			if (pthread_create(&reserva[hilos_reserva-ni], NULL, reservar, &ids_reserva[hilos_reserva-ni]) != 0) {
 				ERROR_HILOS("Error en la creación de los hilos (reserva)");
 			}
+			res++;
+			n++;
+			ni--;
 		}
 		
-		for (int i = 0; i < N_grupo; i++) {
-			*(ids_libera + mi + i) = i + 1;
-			if (pthread_create(&libera[i], NULL, liberar, &ids_libera[i]) != 0) {
+		for (int i = 0; i < N_grupo && mi > 0; i++) {
+			*(ids_libera + hilos_libera - mi) = hilos_libera - mi + 1;
+			if (pthread_create(&libera[hilos_libera-mi], NULL, liberar, &ids_libera[hilos_libera-mi]) != 0) {
 				ERROR_HILOS("Error en la creación de los hilos (libera)");
 			}
+			lib++;
+			m++;
+			mi--;
 		}
-
+		pthread_mutex_unlock(&main_mutex);
 		
-		for (int i = 0; i < hilos_reserva; i++) {
-			pthread_join(reserva[i], NULL);
-			ni++;
-		}
-		for (int i = 0; i < hilos_libera; i++) {
-			pthread_join(libera[i], NULL);
-			mi++;
-		}
+		for (int i = 0; i < res; i++) pthread_join(reserva[i], NULL);
+		for (int i = 0; i < lib; i++) pthread_join(libera[i], NULL);
 	}
 
 	estado_sala("\n\nEstado final de la sala");
