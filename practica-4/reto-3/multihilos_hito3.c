@@ -9,20 +9,19 @@
 #include "hilos/retardo.h"
 
 #ifndef CAPACIDAD
-#define CAPACIDAD 10
+#define CAPACIDAD 20
 #endif
 
-extern pthread_mutex_t mutex;
-pthread_mutex_t end_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 
-int n_max, n, m;
+int n, m;
 
 void* mostrar_estado(void* arg) {
 	
-	while(capacidad_sala() > 0) {
+	while(n > 0 || m > 0) {
 		estado_sala("\n\nSala en mitad del proceso");
 		sleep(5);
 	}
@@ -30,73 +29,84 @@ void* mostrar_estado(void* arg) {
 
 void* reservar(void* arg) {
 	int id = *((int*) arg);
+	
 	for(int i = 0; i < 3; i++) {
+		pthread_mutex_lock(&main_mutex);
 
 		while (reserva_asiento(id) == -1) {
-			pthread_mutex_lock(&end_mutex);
 			if (m == 0) {
-				pthread_mutex_unlock(&end_mutex);
+			        printf("No hay más hilos que liberan. Abortando hilo reservar %d.\n", id);
+			        n--;
+				pthread_mutex_unlock(&main_mutex);
 				return NULL;
 			}
-			pthread_mutex_unlock(&end_mutex); //deberíamos bajar el mutex
-
-			printf("%d esperando para reservar...\n", id);
-			pthread_cond_wait(&cond_reservas, &mutex);
+			
+			printf("Hilo %d esperando para reservar...\n", id);
+			pthread_mutex_unlock(&main_mutex);
+			pthread_cond_wait(&cond_reservas, &main_mutex);
+			
 		}
 
-                puts("Se ha reservado...");
 		pthread_cond_broadcast(&cond_liberaciones);
-		pausa_aleatoria(5);
+		pthread_mutex_unlock(&main_mutex);
+		pausa_aleatoria(8);
 	}
 
-	pthread_mutex_lock(&end_mutex);
+	pthread_mutex_lock(&main_mutex);
 	n--;
 	pthread_cond_broadcast(&cond_liberaciones);
-	pthread_mutex_unlock(&end_mutex);
+	pthread_mutex_unlock(&main_mutex);
+	
+	printf("Hilo reserva %d ha terminado sus tareas.\n", id);
 }
 
 
 void* liberar(void* arg) {
 	int id = *((int*) arg);
+	
 	for(int i = 0; i < 3; i++) {
-
+	        pthread_mutex_lock(&main_mutex);
+	        
 		while (libera_cualquiera() == -1) {
-			pthread_mutex_lock(&end_mutex);
 			if(n == 0) {
-				pthread_mutex_unlock(&end_mutex);
+			        printf("No hay más hilos que reservan. Abortando hilo liberar %d.\n", id);
+			        m--;
+				pthread_mutex_unlock(&main_mutex);
 				return NULL;
 			}
-			pthread_mutex_unlock(&end_mutex);
-			printf("%d esperando para liberar...\n", id); //puede darse el caso de que, en lo que se printea la notificación del ultimo que liber no llegue a este hio y se queda esperando eternamente, solucion quitar el printf, o printear con dentro de la seccion crítica para que nadie pueda modificar en lo que tu estaás printando
-			pthread_cond_wait(&cond_liberaciones, &mutex);
+			
+			printf("Hilo %d esperando para liberar...\n", id);
+			pthread_mutex_unlock(&main_mutex);
+			
+			pthread_cond_wait(&cond_liberaciones, &main_mutex);
 		}
 
 		pthread_cond_broadcast(&cond_reservas);
-		pausa_aleatoria(5);
+		pthread_mutex_unlock(&main_mutex);
+		pausa_aleatoria(8);
 	}
-	pthread_mutex_lock(&end_mutex);
+	pthread_mutex_lock(&main_mutex);
 	m--;
 	pthread_cond_broadcast(&cond_reservas);
-	pthread_mutex_unlock(&end_mutex);
+	pthread_mutex_unlock(&main_mutex);
+	printf("Hilo libera %d ha terminado sus tareas.\n", id);
 }
-
 
 int main(int argc, char* argv[]) {
 
-	if (argc != 4) {
-		fprintf(stderr, "Número de argumentos incorrecto. Introduzca \"multihilos maximo_de_hilos_por_grupo nhilos_reservas nhilos_liberaciones\"\n");
+	if (argc != 3) {
+		fprintf(stderr, "Número de argumentos incorrecto. Introduzca \"multihilos n m\"\n");
 		exit(1);
 	}
 
-	n_max = atoi(argv[1]);
-	int hilos_reserva = atoi(argv[2]);
-	int hilos_libera = atoi(argv[3]);
+	int hilos_reserva = atoi(argv[1]);
+	int hilos_libera = atoi(argv[2]);
 
 	n = hilos_reserva;
 	m = hilos_libera;
 	
-	if (hilos_reserva <= 0 || hilos_libera <= 0 || n_max <= 0) {
-		fprintf(stderr, "Los argumentos deben ser enteros positivos. Introduzca \"multihilos maximo_de_hilos_por_grupo nhilos_reservas nhilos_liberaciones\"\n");
+	if (hilos_reserva <= 0 || hilos_libera <= 0) {
+		fprintf(stderr, "Los argumentos 2/3 deben ser enteros positivos. Introduzca \"multihilos n m\"\n");
 		exit(1);
 	}
 	
@@ -153,4 +163,4 @@ int main(int argc, char* argv[]) {
 	exit(0);
 }
 
-void join_reserva
+
