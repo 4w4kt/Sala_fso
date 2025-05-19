@@ -94,16 +94,16 @@ void* liberar(void* arg) {
 int main(int argc, char* argv[]) {
 
 	if (argc != 4) {
-		fprintf(stderr, "Número de argumentos incorrecto. Introduzca \"multihilos n m\"\n");
+		fprintf(stderr, "Número de argumentos incorrecto. Introduzca \"multihilos n res lib\"\n");
 		exit(1);
 	}
 
-	int hilos_libera= atoi(argv[2]);
-	int hilos_reserva = atoi(argv[3]);
+	int hilos_libera= atoi(argv[3]);
+	int hilos_reserva = atoi(argv[2]);
 	int N_grupo = atoi(argv[1]);
 	
 	if (hilos_reserva <= 0 || hilos_libera <= 0 || N_grupo <= 0) {
-		fprintf(stderr, "Los argumentos 2/3/4 deben ser enteros positivos. Introduzca \"multihilos n m\"\n");
+		fprintf(stderr, "Los argumentos 2/3/4 deben ser enteros positivos. Introduzca \"multihilos n res lib\"\n");
 		exit(1);
 	}
 
@@ -152,25 +152,26 @@ int main(int argc, char* argv[]) {
 		}
 		pthread_mutex_unlock(&main_mutex);
 		
-		for (int i = 0; i < res; i++) {
-			printf("Join reserva %d\n", hilos_reserva-ni+i+1);
-			pthread_join(reserva[hilos_reserva-ni+i], NULL);
-		for (int i = 0; i < lib; i++) {
-		
-			printf("Join libera %d\n", hilos_reserva-ni+i+1);
-		pthread_join(libera[hilos_libera-mi+i], NULL);
+		for (int i = 1; i <= res; i++) {
+			printf("hilos_reserva = %d, ni = %d, Join reserva %d\n", hilos_reserva, ni, hilos_reserva-ni-i+1);
+			pthread_join(reserva[hilos_reserva-ni-i], NULL);
+		}
+		for (int i = 1; i <= lib; i++) {
+			printf("Join libera %d\n", hilos_reserva-ni-i+1);
+			pthread_join(libera[hilos_libera-mi-i], NULL);
 		}
 		puts("Pausa...");
 		sleep(10);
 	}
 	
-	estado_sala("\n\nEstado final de la sala");
+	
 	pthread_join(estado, NULL);
+	estado_sala("\n\nEstado final de la sala");
 	elimina_sala();
 
 	free(ids_reserva);
 	free(ids_libera);
 	exit(0);
-}
 
+} 
 
