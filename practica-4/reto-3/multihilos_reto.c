@@ -20,9 +20,15 @@ pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 int n, m;
 
 void* mostrar_estado(void* arg) {
-	while(n > 0 || m > 0) {
+	while (1) {
+		pthread_mutex_lock(&main_mutex);
+		if (n > 0 && m > 0) {
+			pthread_mutex_unlock(&main_mutex);
+			break;
+		}
+		pthread_mutex_unlock(&main_mutex);
 		estado_sala("\n\nSala en mitad del proceso");
-		sleep(5);
+		sleep(3);
 	}
 }
 
@@ -107,12 +113,9 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-
-	
-
 	pthread_t reserva[hilos_reserva], libera[hilos_libera], estado;
 	int* ids_reserva = malloc(hilos_reserva * sizeof(int));
-	int* ids_libera = malloc(hilos_reserva * sizeof(int));
+	int* ids_libera = malloc(hilos_libera * sizeof(int));
 
 	crea_sala(CAPACIDAD);
 	
@@ -152,12 +155,10 @@ int main(int argc, char* argv[]) {
 		}
 		pthread_mutex_unlock(&main_mutex);
 		
-		for (int i = 1; i <= res; i++) {
-			printf("hilos_reserva = %d, ni = %d, Join reserva %d\n", hilos_reserva, ni, hilos_reserva-ni-i+1);
+		for (int i = res; i > 0; i--) {
 			pthread_join(reserva[hilos_reserva-ni-i], NULL);
 		}
-		for (int i = 1; i <= lib; i++) {
-			printf("Join libera %d\n", hilos_reserva-ni-i+1);
+		for (int i = lib; i > 0; i--) {
 			pthread_join(libera[hilos_libera-mi-i], NULL);
 		}
 		puts("Pausa...");
@@ -168,7 +169,6 @@ int main(int argc, char* argv[]) {
 	pthread_join(estado, NULL);
 	estado_sala("\n\nEstado final de la sala");
 	elimina_sala();
-
 	free(ids_reserva);
 	free(ids_libera);
 	exit(0);

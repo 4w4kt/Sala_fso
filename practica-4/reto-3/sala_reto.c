@@ -32,7 +32,6 @@ int reserva_asiento(int id_persona) {
             *(sala+i) = id_persona;
             ocupados++;
             pthread_mutex_unlock(&mutex);
-            printf("reservado, ocupados = %d\n", ocupados);
             return(i + 1);
         }
     }
@@ -269,13 +268,12 @@ int libera_cualquiera() {
               return -1;
       }
 
-      for (int i = 0; i < cap_sala; i++) { //podemos poner un conteo del ultimo reservado y liberado y nos ahorramos el for para liberar y reservar
+      for (int i = 0; i < cap_sala; i++) {
               if (*(sala + i) != 0) {
               *(sala + i) = 0;
               ocupados--;
 
               pthread_mutex_unlock(&mutex);
-              printf("Liberado asiento %d.ocupados = %d\n", i + 1, ocupados);
               return i + 1;
         }
     }
