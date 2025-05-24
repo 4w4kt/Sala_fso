@@ -11,6 +11,7 @@
 
 #include "sala.h"
 #include "macros.h"
+#include "hilos/retardo.h"
 #include <stdlib.h>
 
 int* sala = NULL;
@@ -29,7 +30,9 @@ int reserva_asiento(int id_persona) {
     if (id_persona <= 0 || ocupados == cap_sala) {RETURN(-1);}
     for (int i = 0; i < cap_sala; i++) {
         if (*(sala+i) == 0) {
+            pausa_aleatroria(0.1);
             *(sala+i) = id_persona;
+            pausa_aleatoria(0.1);
             ocupados++;
             RETURN(i + 1);
         }
@@ -48,7 +51,9 @@ int libera_asiento(int id_asiento) {
     if (id_asiento > cap_sala || id_asiento <= 0 || *(sala + (id_asiento - 1) ) == 0) {RETURN(-1);}
 
     int result = *(sala + (id_asiento - 1));
+    pausa_aleatoria(0.1);
     *(sala + (id_asiento - 1)) = 0;
+    pausa_aleatoria(0.1);
     ocupados--;
     RETURN(result);
 }
@@ -73,6 +78,7 @@ int estado_asiento(int id_asiento){
 int asientos_libres() {
     pthread_mutex_lock(&mutex);
     if (sala == NULL) {RETURN(-1);}
+    pausa_aleatoria(0.1);
     RETURN(cap_sala - ocupados);
 }
 
@@ -84,6 +90,7 @@ int asientos_libres() {
 int asientos_ocupados() {
     pthread_mutex_lock(&mutex);
     if (sala == NULL) {RETURN(-1);}
+    pausa_aleatoria(0.1);
     RETURN(ocupados);
 }
 
@@ -94,7 +101,8 @@ int asientos_ocupados() {
  */
 int capacidad_sala() {
     pthread_mutex_lock(&mutex);
-    if (sala == NULL) return(-1);
+    if (sala == NULL) {RETURN(-1);}
+	pausa_aleatoria(0.1);
     RETURN(cap_sala);
 }
 

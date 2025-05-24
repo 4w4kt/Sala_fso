@@ -11,13 +11,14 @@
 
 #include "sala.h"
 #include "macros.h"
+#include "hilos/retardo.h"
 #include <stdlib.h>
 
 int* sala = NULL;
 int cap_sala;
 int ocupados;
 
-extern pthread_mutex_t mutex;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
  * Reserva un asiento libre a una persona.
@@ -25,11 +26,14 @@ extern pthread_mutex_t mutex;
  * @return número de asiento si hay un asiento libre, -1 en cualquier otro caso
  */
 int reserva_asiento(int id_persona) {
-    pthread_mutex_lock(&mutex);
+    if (pthread_mutex_trylock(&mutex) != 0) return -1;
+    
     if (id_persona <= 0 || ocupados == cap_sala) {RETURN(-1);}
     for (int i = 0; i < cap_sala; i++) {
         if (*(sala+i) == 0) {
+            pausa_aleatoria(0.1);
             *(sala+i) = id_persona;
+            pausa_aleatoria(0.1);
             ocupados++;
             RETURN(i + 1);
         }
@@ -45,10 +49,12 @@ int reserva_asiento(int id_persona) {
  */
 int libera_asiento(int id_asiento) {
     pthread_mutex_lock(&mutex);
-    if (id_asiento > cap_sala || id_asiento <= 0 || *(sala + (id_asiento - 1) ) == 0) {RETURN(-1);}
+    if (id_asiento > cap_sala || id_asiento <= 0 || *(sala + (id_asiento - 1) ) == 0) {RETURN(-1)};
 
     int result = *(sala + (id_asiento - 1));
+    pausa_aleatoria(0.1);
     *(sala + (id_asiento - 1)) = 0;
+    pausa_aleatoria(0.1);
     ocupados--;
     RETURN(result);
 }
@@ -61,7 +67,7 @@ int libera_asiento(int id_asiento) {
  */
 int estado_asiento(int id_asiento){
     pthread_mutex_lock(&mutex);
-    if (id_asiento > cap_sala || id_asiento <= 0) {RETURN(-1);}
+    if (id_asiento > cap_sala || id_asiento <= 0) {RETURN(-1)};
     RETURN(*(sala + id_asiento - 1));
 }
 
@@ -84,6 +90,7 @@ int asientos_libres() {
 int asientos_ocupados() {
     pthread_mutex_lock(&mutex);
     if (sala == NULL) {RETURN(-1);}
+    pausa_aleatoria(0.1);
     RETURN(ocupados);
 }
 
@@ -94,7 +101,8 @@ int asientos_ocupados() {
  */
 int capacidad_sala() {
     pthread_mutex_lock(&mutex);
-    if (sala == NULL) return(-1);
+    if (sala == NULL) {RETURN(-1);}
+    pausa_aleatoria(0.1);
     RETURN(cap_sala);
 }
 
@@ -107,7 +115,7 @@ int capacidad_sala() {
 int crea_sala(int capacidad) {
     elimina_sala();
     pthread_mutex_lock(&mutex);
-    if (capacidad <= 0) {RETURN(-1);}
+    if (capacidad <= 0) {RETURN(-1)};
     sala = calloc(capacidad, sizeof(int));
     if (sala == NULL) {RETURN(-1);}
     cap_sala = capacidad;
@@ -131,7 +139,6 @@ int elimina_sala() {
 }
 
 
-/* Para asegurarnos de que la API sea thread-safe, incluimos aquí las funciones de aux_test_sala que podrían generar inconsistencias */
 
 /* Para asegurarnos de que la API sea thread-safe, incluimos aquí las funciones de aux_test_sala que podrían generar inconsistencias */
 
@@ -174,7 +181,7 @@ int levantarse(int id_persona) {
         if (DETALLES) printf("Ha ocurrido un error.\n");
         return(-1);
     }
-
+    
     for (int i = 0; i < cap_sala; i++) {
         if (*(sala + i) == id_persona) {
             *(sala + i) = 0;
@@ -198,11 +205,12 @@ int levantarse(int id_persona) {
 int sentarse(int id_persona) {
     int result = reserva_asiento(id_persona);
     if (DETALLES) {
+        
         if (result != -1) {
-
             printf("Puede sentarse en el asiento %d, %d\n", result, id_persona);
             return result;
         }
+
         printf("No se ha encontrado un asiento para usted, %d\n", id_persona);
         return result;
     }
@@ -214,7 +222,7 @@ int sentarse(int id_persona) {
  * Reserva un asiento a cada persona pasada
  * @param n_personas cantidad de personas en la lista
  * @param lista_id lista de personas que desean un asiento
- * @return el número de personas si se a encontrado asiento para todas, -1 en caso contrario
+ * @return el número de personas si se ha encontrado asiento para todas, -1 en caso contrario
  */
 
 int reserva_multiple(int n_personas, int* lista_id) {
@@ -257,4 +265,24 @@ int reserva_multiple(int n_personas, int* lista_id) {
     }
 
     return(n_personas);
+}    
+  
+int libera_cualquiera() {
+    if (pthread_mutex_trylock(&mutex) != 0) return -1;
+    
+    if (ocupados == 0) {
+              pthread_mutex_unlock(&mutex);
+              if (DETALLES) puts("No hay asientos que liberar.");
+              return -1;
+      }
+
+      for (int i = 0; i < cap_sala; i++) {
+              if (*(sala + i) != 0) {
+              *(sala + i) = 0;
+              ocupados--;
+
+              pthread_mutex_unlock(&mutex);
+              return i + 1;
+        }
+    }
 }

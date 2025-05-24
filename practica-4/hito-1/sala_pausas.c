@@ -11,6 +11,7 @@
 
 #include "sala.h"
 #include "macros.h"
+#include "hilos/retardo.h"
 #include <stdlib.h>
 
 
@@ -24,10 +25,14 @@ int ocupados;
  * @return número de asiento si hay un asiento libre, -1 en cualquier otro caso
  */
 int reserva_asiento(int id_persona) {
+	pausa_alearoria(0.1);
     if (id_persona <= 0 || ocupados == cap_sala) return -1;
     for (int i = 0; i < cap_sala; i++) {
         if (*(sala+i) == 0) {
+			pausa_aleatoria(0.1);
             *(sala+i) = id_persona;
+			
+			pausa_aleatoria(0.1);
             ocupados++;
             return i + 1;
         }
@@ -45,7 +50,9 @@ int libera_asiento(int id_asiento) {
     if (id_asiento > cap_sala || id_asiento <= 0 || *(sala + (id_asiento - 1) ) == 0) return -1;
 
     int result = *(sala + (id_asiento - 1));
+	pausa_aleatoria(0.1);
     *(sala + (id_asiento - 1)) = 0;
+	pausa_aleatoria(0.1);
     ocupados--;
     return result;
 }
@@ -68,6 +75,7 @@ int estado_asiento(int id_asiento){
  */
 int asientos_libres() {
     if (sala == NULL) return -1;
+	pausa_aleatoria(0.1);
     return cap_sala - ocupados;
 }
 
@@ -78,6 +86,7 @@ int asientos_libres() {
  */
 int asientos_ocupados() {
     if (sala == NULL) return -1;
+	pausa_aleatoria(0.1);
 	return ocupados;
 }
 
@@ -88,6 +97,7 @@ int asientos_ocupados() {
  */
 int capacidad_sala() {
     if (sala == NULL) return -1;
+	pausa_aleatoria(0.1);
     return cap_sala;
 }
 

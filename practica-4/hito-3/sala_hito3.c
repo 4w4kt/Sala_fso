@@ -32,8 +32,7 @@ int reserva_asiento(int id_persona) {
         if (*(sala+i) == 0) {
             *(sala+i) = id_persona;
             ocupados++;
-            pthread_mutex_unlock(&mutex);
-            return(i + 1);
+            RETURN(i + 1);
         }
     }
     RETURN(-1);
@@ -199,8 +198,8 @@ int levantarse(int id_persona) {
 int sentarse(int id_persona) {
     int result = reserva_asiento(id_persona);
     if (DETALLES) {
+        
         if (result != -1) {
-
             printf("Puede sentarse en el asiento %d, %d\n", result, id_persona);
             return result;
         }
