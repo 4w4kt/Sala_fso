@@ -15,10 +15,10 @@
 
 // reto 3: poner pausas largas para que se vea, mandar vídeo por sharepoint
 
-
+int ejecutando = 0;
 void* mostrar_estado(void* arg) {
 
-	while(capacidad_sala() > 0) {
+	while(ejecutando) {
 		estado_sala("\n\nSala en mitad del proceso");
 		sleep(3);
 	}
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 	pthread_t hilos[n_hilos], estado;
 	int* ids = (int*) malloc(n_hilos * sizeof(int));
 	crea_sala(CAPACIDAD);
-	
+	ejecutando = 1;
 	for (int i = 0; i < n_hilos; i++) {
 		*(ids + i) = i + 1;
 		if (pthread_create(&hilos[i], NULL, reserva_anula, ids+i) != 0) {
@@ -72,7 +72,8 @@ int main(int argc, char* argv[]) {
 	}
 	
 	estado_sala("Estado final de la sala");
-	elimina_sala();
+	ejecutando = 0;
 	pthread_join(estado, NULL);
+	elimina_sala();
 	free(ids);
 }
