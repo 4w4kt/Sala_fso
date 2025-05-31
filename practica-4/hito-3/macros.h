@@ -127,10 +127,11 @@
 // control de hilos
 
 #define CHECK_HILOS(x) \
-		elimina_sala(); \
-		free(ids);\
-		perror(x);\
-		exit(1);\
+			elimina_sala();\
+			free(ids_reserva); \
+			free(ids_libera);\
+			perror(X);\
+			exit(1);\
 
 
 #define RETURN(x) pthread_mutex_unlock(&mutex); return x;

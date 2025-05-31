@@ -119,31 +119,19 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < hilos_reserva; i++) {
 		*(ids_reserva + i) = i + 1;
 		if (pthread_create(&reserva[i], NULL, reservar, &ids_reserva[i]) != 0) {
-			elimina_sala();
-			free(ids_reserva);
-			free(ids_libera);
-			perror("Error en la creación de los hilos");
-			exit(1);
+			CHECK_HILOS("Error en la creación de los hilos");
 		}
 	}
 	
 	for (int i = 0; i < hilos_libera; i++) {
 		*(ids_libera + i) = i + 1;
 		if (pthread_create(&libera[i], NULL, liberar, &ids_libera[i]) != 0) {
-			elimina_sala();
-			free(ids_reserva);
-			free(ids_libera);
-			perror("Error en la creación de los hilos");
-			exit(1);
+			CHECK_HILOS("Error en la creación de los hilos");
 		}
 	}
 
 	if (pthread_create(&estado, NULL, mostrar_estado, NULL) != 0) {
-		elimina_sala();
-		free(ids_reserva);
-		free(ids_libera);
-		perror("Error en la creación de los hilos");
-		exit(1);
+		CHECK_HILOS("Error en la creación de los hilos");
 	}
 	
 	for (int i = 0; i < hilos_reserva; i++) {
