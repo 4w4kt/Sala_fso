@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 	
 	pthread_t reserva[hilos_reserva], libera[hilos_libera], estado;
 	int* ids_reserva = malloc(hilos_reserva * sizeof(int));
-	int* ids_libera = malloc(hilos_reserva * sizeof(int));
+	int* ids_libera = malloc(hilos_libera * sizeof(int));
 
 	crea_sala(CAPACIDAD);
 	
@@ -153,11 +153,10 @@ int main(int argc, char* argv[]) {
 		pthread_join(libera[i], NULL);
 	}
 
-	estado_sala("\n\nEstado final de la sala");
-
-	elimina_sala();
+        
 	pthread_join(estado, NULL);
-
+	estado_sala("\n\nEstado final de la sala");
+	elimina_sala();
 	free(ids_reserva);
 	free(ids_libera);
 	exit(0);
