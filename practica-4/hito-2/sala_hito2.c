@@ -17,7 +17,7 @@ int* sala = NULL;
 int cap_sala;
 int ocupados;
 
-extern pthread_mutex_t mutex;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
  * Reserva un asiento libre a una persona.

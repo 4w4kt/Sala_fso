@@ -71,9 +71,9 @@ int main(int argc, char* argv[]) {
 		pthread_join(hilos[i], NULL);
 	}
 	
-	estado_sala("Estado final de la sala");
 	ejecutando = 0;
 	pthread_join(estado, NULL);
+	estado_sala("Estado final de la sala");
 	elimina_sala();
 	free(ids);
 }

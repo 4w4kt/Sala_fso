@@ -57,8 +57,4 @@ extern int guarda_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, 
 
 extern int recupera_estado_parcial_sala (char* ruta_fichero, size_t num_asientos, int* id_asientos);
 
-/// Manejo de hilos
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
 # endif
