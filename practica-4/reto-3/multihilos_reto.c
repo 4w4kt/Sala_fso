@@ -47,7 +47,6 @@ void* reservar(void* arg) {
 			}
 			
 			printf("Hilo %d esperando para reservar...\n", id);
-			pthread_mutex_unlock(&main_mutex);
 			pthread_cond_wait(&cond_reservas, &main_mutex);
 			
 		}
@@ -81,8 +80,6 @@ void* liberar(void* arg) {
 			}
 			
 			printf("Hilo %d esperando para liberar...\n", id);
-			pthread_mutex_unlock(&main_mutex);
-			
 			pthread_cond_wait(&cond_liberaciones, &main_mutex);
 		}
 
