@@ -17,17 +17,23 @@ pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond_reservas = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_liberaciones = PTHREAD_COND_INITIALIZER;
 
-int n, m;
+int n = 0;
+int m = 0;
+int ni, mi, res, lib;
 
 void* mostrar_estado(void* arg) {
 	while (1) {
 		pthread_mutex_lock(&main_mutex);
-		if (n > 0 && m > 0) {
+		if (ni <= 0 && mi <= 0) {
 			pthread_mutex_unlock(&main_mutex);
 			break;
 		}
-		pthread_mutex_unlock(&main_mutex);
+		if (res == 0 || lib == 0) {
+		        pthread_mutex_unlock(&main_mutex);
+		        continue;
+		}
 		estado_sala("\n\nSala en mitad del proceso");
+		pthread_mutex_unlock(&main_mutex);
 		sleep(3);
 	}
 }
@@ -35,12 +41,13 @@ void* mostrar_estado(void* arg) {
 void* reservar(void* arg) {
 	int id = *((int*) arg);
 	
+	pausa_aleatoria(2);
 	pthread_mutex_lock(&main_mutex);
 
 	while (reserva_asiento(id) == -1) {
-		if (m == 0) {
-				printf("No hay más hilos que liberan. Abortando hilo reservar %d.\n", id);
-				n--;
+		if (mi == 0) {
+			printf("No hay más hilos que liberan. Abortando hilo reservar %d.\n", id);
+			n--;
 			pthread_mutex_unlock(&main_mutex);
 			return NULL;
 		}
@@ -59,10 +66,12 @@ void* reservar(void* arg) {
 
 void* liberar(void* arg) {
 	int id = *((int*) arg);
+	
+	pausa_aleatoria(2);
 	pthread_mutex_lock(&main_mutex);
 	        
 		while (libera_cualquiera() == -1) {
-			if(n == 0) {
+			if(ni == 0) {
 			        printf("No hay más hilos que reservan. Abortando hilo liberar %d.\n", id);
 			        m--;
 				pthread_mutex_unlock(&main_mutex);
@@ -100,21 +109,20 @@ int main(int argc, char* argv[]) {
 	int* ids_libera = malloc(hilos_libera * sizeof(int));
 
 	crea_sala(CAPACIDAD);
+
+	ni = hilos_reserva;
+	mi = hilos_libera;
 	
 	if (pthread_create(&estado, NULL, mostrar_estado, NULL) != 0) {
 		ERROR_HILOS("Error en la creación del hilo mostrar estado");
 	}
 
-	int ni = hilos_reserva;
-	int mi = hilos_libera;
-
-	int res, lib;
+	res = 0;
+	lib = 0;
 
 	while (ni > 0 || mi > 0) {
 
 		pthread_mutex_lock(&main_mutex);
-		res = 0;
-		lib = 0;
 
 		for (int i = 0; i < N_grupo && ni > 0; i++) {
 			*(ids_reserva + hilos_reserva - ni) = hilos_reserva - ni + 1;
@@ -143,6 +151,10 @@ int main(int argc, char* argv[]) {
 		for (int i = lib; i > 0; i--) {
 			pthread_join(libera[hilos_libera-mi-i], NULL);
 		}
+		
+		res = 0;
+		lib = 0;
+		
 		puts("Pausa...");
 		sleep(10);
 	}
