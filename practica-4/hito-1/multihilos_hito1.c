@@ -27,6 +27,10 @@ void* reserva_anula(void* arg) {
 	
 	for(int i = 0; i < 3; i++) {
 		if (reserva_asiento(id) == -1) {
+		        // Hemos entendido que por "terminará su ejecución sin ningún efecto sobre la sala", significa
+		        // que el hilo deshace los cambios hechos, dejando la sala como estaba antes de la transacción.
+		        // En caso de referirse a que el hilo debería abortar sin deshacer sus cambios, bastaría con
+		        // eliminar el bucle for, y únicamente devolver NULL para abortar el hilo.
 			for (int j = 0; j < i; j++) {
 				levantarse(id);
 			}
