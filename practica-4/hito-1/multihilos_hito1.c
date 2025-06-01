@@ -12,10 +12,8 @@
 #define CAPACIDAD 10
 #endif
 
-
-// reto 3: poner pausas largas para que se vea, mandar vídeo por sharepoint
-
 int ejecutando = 0;
+
 void* mostrar_estado(void* arg) {
 
 	while(ejecutando) {

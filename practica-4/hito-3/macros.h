@@ -130,7 +130,7 @@
 			elimina_sala();\
 			free(ids_reserva); \
 			free(ids_libera);\
-			perror(X);\
+			perror(x);\
 			exit(1);\
 
 
