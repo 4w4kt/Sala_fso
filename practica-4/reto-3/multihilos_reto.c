@@ -35,28 +35,20 @@ void* mostrar_estado(void* arg) {
 void* reservar(void* arg) {
 	int id = *((int*) arg);
 	
-	for(int i = 0; i < 3; i++) {
-		pthread_mutex_lock(&main_mutex);
+	pthread_mutex_lock(&main_mutex);
 
-		while (reserva_asiento(id) == -1) {
-			if (m == 0) {
-			        printf("No hay más hilos que liberan. Abortando hilo reservar %d.\n", id);
-			        n--;
-				pthread_mutex_unlock(&main_mutex);
-				return NULL;
-			}
-			
-			printf("Hilo %d esperando para reservar...\n", id);
-			pthread_cond_wait(&cond_reservas, &main_mutex);
-			
+	while (reserva_asiento(id) == -1) {
+		if (m == 0) {
+				printf("No hay más hilos que liberan. Abortando hilo reservar %d.\n", id);
+				n--;
+			pthread_mutex_unlock(&main_mutex);
+			return NULL;
 		}
-
-		pthread_cond_broadcast(&cond_liberaciones);
-		pthread_mutex_unlock(&main_mutex);
-		pausa_aleatoria(8);
+		
+		printf("Hilo %d esperando para reservar...\n", id);
+		pthread_cond_wait(&cond_reservas, &main_mutex);
 	}
 
-	pthread_mutex_lock(&main_mutex);
 	n--;
 	pthread_cond_broadcast(&cond_liberaciones);
 	pthread_mutex_unlock(&main_mutex);
@@ -67,9 +59,7 @@ void* reservar(void* arg) {
 
 void* liberar(void* arg) {
 	int id = *((int*) arg);
-	
-	for(int i = 0; i < 3; i++) {
-	        pthread_mutex_lock(&main_mutex);
+	pthread_mutex_lock(&main_mutex);
 	        
 		while (libera_cualquiera() == -1) {
 			if(n == 0) {
@@ -82,12 +72,7 @@ void* liberar(void* arg) {
 			printf("Hilo %d esperando para liberar...\n", id);
 			pthread_cond_wait(&cond_liberaciones, &main_mutex);
 		}
-
-		pthread_cond_broadcast(&cond_reservas);
-		pthread_mutex_unlock(&main_mutex);
-		pausa_aleatoria(8);
-	}
-	pthread_mutex_lock(&main_mutex);
+		
 	m--;
 	pthread_cond_broadcast(&cond_reservas);
 	pthread_mutex_unlock(&main_mutex);
