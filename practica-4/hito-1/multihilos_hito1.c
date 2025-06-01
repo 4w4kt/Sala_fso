@@ -30,15 +30,15 @@ void* reserva_anula(void* arg) {
 			for (int j = 0; j < i; j++) {
 				levantarse(id);
 			}
-			return;
+			return NULL;
 		}
 		pausa_aleatoria(2);
 	}
 
 	for(int i = 0; i < 3; i++) {
 		if(levantarse(id) == -1){
-			printf("Hilo %d ha intentado liberar y no ha podido\n. Abortando hilo reserva %d.\n", id, id);;
-			return; 
+			printf("Hilo %d ha intentado liberar y no ha podido, abortando hilo %d.\n", id, id);
+			return NULL; 
 		}
 		pausa_aleatoria(2);
 	}
